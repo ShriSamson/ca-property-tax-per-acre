@@ -1,39 +1,51 @@
 // Single source of truth for the tax-per-acre color scale.
-// Breaks are log10(tax per acre): 10^3 = $1k/acre ... 10^7 = $10M/acre.
+// 10 discrete buckets of increasing darkness (single-hue blues) so
+// neighborhood-level differences read boldly at a glance.
 export const NO_DATA_COLOR = "#d4d4d0";
 export const ZERO_TAX_COLOR = "#c9a96b";
 
-// Single-hue sequential ramp: light blue → dark navy, darkness increasing
-// monotonically with tax per acre (ColorBrewer Blues).
-export const RAMP = [
-  { log: 3, color: "#eff6fc", label: "$1k" },
-  { log: 4, color: "#c6dbef", label: "$10k" },
-  { log: 4.7, color: "#9ecae1", label: "$50k" },
-  { log: 5.3, color: "#6baed6", label: "$200k" },
-  { log: 6, color: "#2b7bba", label: "$1M" },
-  { log: 7, color: "#08306b", label: "$10M+" },
+export const BUCKETS = [
+  { min: 0,         color: "#f7fbff", label: "< $10k" },
+  { min: 10_000,    color: "#deebf7", label: "$10k – 25k" },
+  { min: 25_000,    color: "#c6dbef", label: "$25k – 50k" },
+  { min: 50_000,    color: "#9ecae1", label: "$50k – 100k" },
+  { min: 100_000,   color: "#6baed6", label: "$100k – 200k" },
+  { min: 200_000,   color: "#4292c6", label: "$200k – 400k" },
+  { min: 400_000,   color: "#2171b5", label: "$400k – 800k" },
+  { min: 800_000,   color: "#08519c", label: "$800k – 1.6M" },
+  { min: 1_600_000, color: "#08306b", label: "$1.6M – 3M" },
+  { min: 3_000_000, color: "#041d42", label: "$3M+" },
 ];
 
-// MapLibre paint expression: gray for no data, purple for $0 (exempt),
-// log-interpolated ramp otherwise.
+// MapLibre paint expression: gray for no data, tan for $0 (exempt),
+// stepped bucket colors otherwise.
 export function fillColorExpression() {
-  const stops = RAMP.flatMap((s) => [s.log, s.color]);
+  const step = ["step", ["get", "tpa"], BUCKETS[0].color];
+  for (const b of BUCKETS.slice(1)) step.push(b.min, b.color);
   return [
     "case",
     ["!", ["has", "tpa"]], NO_DATA_COLOR,
     ["==", ["get", "t"], 0], ZERO_TAX_COLOR,
-    ["interpolate", ["linear"], ["log10", ["max", ["get", "tpa"], 1]], ...stops],
+    step,
+  ];
+}
+
+// 3D bar height: log scale, 200m of height per decade of tax/acre above $1k.
+export function extrusionHeightExpression() {
+  return [
+    "case",
+    ["!", ["has", "tpa"]], 0,
+    ["*", 200, ["max", 0, ["-", ["log10", ["max", ["get", "tpa"], 1]], 3]]],
   ];
 }
 
 export function buildLegend(container) {
-  const gradient = RAMP.map(
-    (s) => `${s.color} ${((s.log - RAMP[0].log) / (RAMP.at(-1).log - RAMP[0].log)) * 100}%`
-  ).join(", ");
+  const rows = BUCKETS.map(
+    (b) => `<div class="legend-row"><span class="swatch" style="background:${b.color}"></span>${b.label}</div>`
+  ).join("");
   container.innerHTML = `
     <div class="legend-title">Tax revenue per acre</div>
-    <div class="legend-bar" style="background: linear-gradient(to right, ${gradient})"></div>
-    <div class="legend-labels">${RAMP.map((s) => `<span>${s.label}</span>`).join("")}</div>
+    <div class="legend-grid">${rows}</div>
     <div class="legend-row"><span class="swatch" style="background:${ZERO_TAX_COLOR}"></span>$0 (exempt)</div>
     <div class="legend-row"><span class="swatch" style="background:${NO_DATA_COLOR}"></span>No tax data</div>`;
 }

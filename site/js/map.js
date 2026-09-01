@@ -1,4 +1,4 @@
-import { fillColorExpression, buildLegend } from "./colors.js";
+import { fillColorExpression, extrusionHeightExpression, buildLegend } from "./colors.js";
 import { popupHtml } from "./popup.js";
 import { initSearch } from "./search.js";
 
@@ -79,30 +79,58 @@ map.on("load", () => {
         "line-opacity": 0.5,
       },
     }, firstSymbol);
+    map.addLayer({
+      id: `${srcId}-3d`,
+      type: "fill-extrusion",
+      source: srcId,
+      "source-layer": "parcels",
+      layout: { visibility: "none" },
+      paint: {
+        "fill-extrusion-color": fillColorExpression(),
+        "fill-extrusion-height": extrusionHeightExpression(),
+        "fill-extrusion-opacity": 0.9,
+      },
+    }, firstSymbol);
 
     let hoverId = null;
-    map.on("mousemove", `${srcId}-fill`, (e) => {
-      map.getCanvas().style.cursor = "pointer";
-      if (hoverId !== null)
-        map.setFeatureState({ source: srcId, sourceLayer: "parcels", id: hoverId }, { hover: false });
-      hoverId = e.features[0].id;
-      map.setFeatureState({ source: srcId, sourceLayer: "parcels", id: hoverId }, { hover: true });
-    });
-    map.on("mouseleave", `${srcId}-fill`, () => {
-      map.getCanvas().style.cursor = "";
-      if (hoverId !== null)
-        map.setFeatureState({ source: srcId, sourceLayer: "parcels", id: hoverId }, { hover: false });
-      hoverId = null;
-    });
-    map.on("click", `${srcId}-fill`, (e) => {
-      const f = e.features[0];
-      selectParcel(srcId, f.id);
-      new maplibregl.Popup({ maxWidth: "320px" })
-        .setLngLat(e.lngLat)
-        .setHTML(popupHtml(f.properties, county, e.lngLat.lat.toFixed(6), e.lngLat.lng.toFixed(6)))
-        .addTo(map);
-    });
+    for (const layerId of [`${srcId}-fill`, `${srcId}-3d`]) {
+      map.on("mousemove", layerId, (e) => {
+        map.getCanvas().style.cursor = "pointer";
+        if (hoverId !== null)
+          map.setFeatureState({ source: srcId, sourceLayer: "parcels", id: hoverId }, { hover: false });
+        hoverId = e.features[0].id;
+        map.setFeatureState({ source: srcId, sourceLayer: "parcels", id: hoverId }, { hover: true });
+      });
+      map.on("mouseleave", layerId, () => {
+        map.getCanvas().style.cursor = "";
+        if (hoverId !== null)
+          map.setFeatureState({ source: srcId, sourceLayer: "parcels", id: hoverId }, { hover: false });
+        hoverId = null;
+      });
+      map.on("click", layerId, (e) => {
+        const f = e.features[0];
+        selectParcel(srcId, f.id);
+        new maplibregl.Popup({ maxWidth: "320px" })
+          .setLngLat(e.lngLat)
+          .setHTML(popupHtml(f.properties, county, e.lngLat.lat.toFixed(6), e.lngLat.lng.toFixed(6)))
+          .addTo(map);
+      });
+    }
   }
+
+  const btn3d = document.getElementById("toggle3d");
+  let is3d = false;
+  btn3d.addEventListener("click", () => {
+    is3d = !is3d;
+    btn3d.classList.toggle("active", is3d);
+    for (const county of counties) {
+      const srcId = `parcels-${county.id}`;
+      map.setLayoutProperty(`${srcId}-fill`, "visibility", is3d ? "none" : "visible");
+      map.setLayoutProperty(`${srcId}-line`, "visibility", is3d ? "none" : "visible");
+      map.setLayoutProperty(`${srcId}-3d`, "visibility", is3d ? "visible" : "none");
+    }
+    map.easeTo({ pitch: is3d ? 55 : 0, duration: 800 });
+  });
 
   // Deep-linked parcel selection from highlights pages.
   if (hash.sel) {
@@ -138,6 +166,14 @@ function selectParcel(srcId, id) {
   selected = { srcId, id };
   map.setFeatureState({ source: srcId, sourceLayer: "parcels", id }, { selected: true });
 }
+
+// Maps initialized in a hidden/background tab miss their initial sizing
+// (rAF and ResizeObserver are throttled) — force a resize once visible.
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) map.resize();
+});
+window.addEventListener("pageshow", () => map.resize());
+map.once("idle", () => map.resize());
 
 map.on("moveend", () => {
   const c = map.getCenter();

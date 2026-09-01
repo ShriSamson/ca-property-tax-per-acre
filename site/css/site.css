@@ -14,6 +14,11 @@ html, body { margin: 0; height: 100%; font-family: -apple-system, "Segoe UI", Ro
   border: 1px solid #ccc; border-radius: 6px; font-size: 14px;
 }
 .topbar input.search-miss { border-color: #d7191c; background: #fff5f5; }
+.topbar #toggle3d {
+  padding: 6px 14px; border: 1px solid #ccc; border-radius: 6px; background: #fff;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+}
+.topbar #toggle3d.active { background: #2171b5; color: #fff; border-color: #2171b5; }
 .topbar nav { margin-left: auto; display: flex; gap: 14px; }
 .topbar nav a { color: #333; text-decoration: none; font-size: 14px; }
 .topbar nav a:hover { text-decoration: underline; }
@@ -26,10 +31,8 @@ html, body { margin: 0; height: 100%; font-family: -apple-system, "Segoe UI", Ro
   padding: 10px 12px; font-size: 12px; width: 240px;
 }
 .legend-title { font-weight: 600; margin-bottom: 6px; }
-.legend-bar { height: 10px; border-radius: 3px; margin-bottom: 2px; }
-.legend-labels { display: flex; justify-content: space-between; color: #555; margin-bottom: 6px; }
-.legend-labels span { font-size: 10px; }
-.legend-row { display: flex; align-items: center; gap: 6px; color: #555; margin-top: 3px; }
+.legend-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px 10px; margin-bottom: 6px; }
+.legend-row { display: flex; align-items: center; gap: 6px; color: #555; margin-top: 3px; font-size: 11px; white-space: nowrap; }
 .swatch { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
 
 .data-note {
