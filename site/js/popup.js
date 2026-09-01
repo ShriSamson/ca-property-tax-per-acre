@@ -64,6 +64,7 @@ export function popupHtml(p, county, lat, lng) {
       <table class="popup-table">${rows
         .map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`)
         .join("")}</table>
+      ${county.taxNote ? `<div class="popup-note">${county.taxNote}</div>` : ""}
       <div class="popup-links">${links
         .map(([href, label]) => `<a href="${href}" target="_blank" rel="noopener">${label}</a>`)
         .join(" · ")}</div>

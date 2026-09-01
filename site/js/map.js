@@ -220,8 +220,8 @@ map.on("moveend", () => {
 buildLegend(document.getElementById("legend"));
 initSearch(map, document.getElementById("search"));
 
-// Coverage footer line.
+// Coverage footer line with per-city tax vintages.
 const totalTaxed = counties.reduce((s, c) => s + c.stats.with_tax, 0);
 document.getElementById("data-note").textContent =
-  `${counties.map((c) => c.name).join(" · ")} — ${totalTaxed.toLocaleString()} taxed parcels · ` +
-  `tax roll ${counties[0].vintage.tax}`;
+  `${counties.map((c) => `${c.name} (${c.vintage.tax})`).join(" · ")} — ` +
+  `${totalTaxed.toLocaleString()} taxed parcels`;

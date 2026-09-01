@@ -21,6 +21,7 @@ sf:
       - street_type
       - analysis_neighborhood
   apn_normalizer: sf
+  vintage_tax: "2020–21 roll"
   tax_record_url: "https://sanfrancisco-ca.county-taxes.com/public/search?search_query={apn}&category=gsgx_property_tax"
   city: "San Francisco, CA"
   center: [-122.4415, 37.762]
@@ -32,6 +33,15 @@ berkeley:
   csv_code: AL
   subset: true  # geometry covers one city; most county tax rows won't match
   address_strip_regex: '\s+BERKELEY\s+\d{5}$'  # CSV addresses end with "BERKELEY 94704"
+  # Current-year ad-valorem tax computed from the county's assessed-value roll
+  # joined to per-TRA rates. Excludes parcel taxes / special assessments.
+  tax_source:
+    type: alameda_roll
+    roll_url: "https://services5.arcgis.com/ROBnTHSNjoZ2Wm1P/ArcGIS/rest/services/Assessor_Office_Secured_Tax_Roll_2025_to_2026/FeatureServer/0"
+    rates_url: "https://services5.arcgis.com/ROBnTHSNjoZ2Wm1P/ArcGIS/rest/services/Property_Tax_Rates_2025/FeatureServer/0"
+    where: "Situs_City = 'BERKELEY'"
+  vintage_tax: "2025–26 ad valorem"
+  tax_note: "Ad-valorem tax for 2025–26; excludes parcel taxes and special assessments"
   geometry:
     type: arcgis
     url: "https://services5.arcgis.com/ROBnTHSNjoZ2Wm1P/ArcGIS/rest/services/Parcels/FeatureServer/0"

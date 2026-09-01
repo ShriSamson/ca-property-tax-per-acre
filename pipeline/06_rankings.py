@@ -73,7 +73,8 @@ def main():
         "minzoom": cfg["minzoom"],
         "taxRecordUrl": cfg["tax_record_url"],
         "city": cfg["city"],
-        "vintage": {"tax": "2024-01", "parcels": meta["data_as_of"]},
+        "taxNote": cfg.get("tax_note"),
+        "vintage": {"tax": cfg.get("vintage_tax", "2020–21 roll"), "parcels": meta["data_as_of"]},
         "stats": rankings["stats"],
     })
     manifest["counties"].sort(key=lambda c: c["name"])

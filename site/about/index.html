@@ -31,9 +31,16 @@
 
     <h2>Methodology</h2>
     <ul>
-      <li><strong>Tax data</strong>: county tax rolls scraped in January 2024 by the
+      <li><strong>Tax data</strong> varies by city. San Francisco: 2020–21 tax bills
+        scraped in October 2020 by the
         <a href="https://github.com/typpo/ca-property-tax">ca-property-tax</a> project
-        (<a href="https://www.officialdata.org/ca-property-tax/">officialdata.org</a>).</li>
+        (<a href="https://www.officialdata.org/ca-property-tax/">officialdata.org</a>).
+        Berkeley: 2025–26 <em>ad-valorem</em> tax computed from Alameda County's
+        published assessed-value roll multiplied by each parcel's tax-rate-area rate
+        (1% base plus voter-approved bonds); this excludes parcel taxes and special
+        assessments, so real Berkeley bills are somewhat higher than shown. Each city
+        is internally consistent — every parcel in it comes from the same fiscal
+        year.</li>
       <li><strong>Parcel boundaries</strong>: county GIS open data (San Francisco:
         <a href="https://data.sfgov.org/Geographic-Locations-and-Boundaries/Parcels-Active-and-Retired/acdm-wktn">DataSF</a>).
         Lot area is computed from parcel polygons in an equal-area projection

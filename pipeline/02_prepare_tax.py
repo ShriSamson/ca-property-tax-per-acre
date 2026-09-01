@@ -1,4 +1,6 @@
-"""Parse the master tax CSV, filter to one county, normalize APNs, dedupe.
+"""Produce per-county tax records (apn, address, tax) from the configured
+tax source: the master scrape CSV by default, or an alternate driver from
+lib/tax_sources.py (e.g. Alameda's current-year assessed-value roll).
 
 The master CSV is 8.5M rows; parsing it all in pandas is slow, so we
 pre-filter with grep to the target county's rows (they end in ",<CODE>")
@@ -12,19 +14,12 @@ import subprocess
 
 import pandas as pd
 
-from lib import config
+from lib import config, tax_sources
 from lib.apn import get_normalizer
 from lib.qa import QAReport
 
 
-def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--county", required=True)
-    args = ap.parse_args()
-
-    cfg = config.load_county(args.county)
-    qa = QAReport("02_prepare_tax")
-
+def load_csv_tax(cfg, normalize, qa) -> pd.DataFrame:
     print(f"Filtering {config.DATA_CSV} to {cfg['csv_code']} rows...")
     header = subprocess.run(
         ["head", "-1", str(config.DATA_CSV)], capture_output=True, text=True, check=True
@@ -47,7 +42,6 @@ def main():
     df = df[df["County code"] == cfg["csv_code"]].copy()
     qa.add("county_rows", len(df))
 
-    normalize = get_normalizer(cfg["apn_normalizer"])
     df["apn"] = df["Parcel Number"].map(normalize)
     df["tax"] = pd.to_numeric(df["Annual property tax"], errors="coerce")
     df["address"] = df["Address"].astype(str).str.strip()
@@ -57,6 +51,25 @@ def main():
         df["address"] = df["address"].str.replace(cfg["address_strip_regex"], "", regex=True)
     df["lat"] = pd.to_numeric(df["Latitude"], errors="coerce")
     df["lng"] = pd.to_numeric(df["Longitude"], errors="coerce")
+    return df
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--county", required=True)
+    args = ap.parse_args()
+
+    cfg = config.load_county(args.county)
+    qa = QAReport("02_prepare_tax")
+    normalize = get_normalizer(cfg["apn_normalizer"])
+
+    ts = cfg.get("tax_source", {"type": "csv"})
+    if ts["type"] == "csv":
+        df = load_csv_tax(cfg, normalize, qa)
+    elif ts["type"] == "alameda_roll":
+        df = tax_sources.alameda_roll(ts, normalize, qa)
+    else:
+        raise SystemExit(f"Unknown tax source type '{ts['type']}'")
 
     bad_tax = df["tax"].isna() | (df["tax"] < 0)
     qa.add("rows_dropped_bad_tax", int(bad_tax.sum()))
