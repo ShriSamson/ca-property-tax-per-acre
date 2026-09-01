@@ -29,8 +29,37 @@ const map = new maplibregl.Map({
   style: "https://tiles.openfreemap.org/styles/positron",
   ...start,
   maxZoom: 20,
+  maxPitch: 85,
 });
-map.addControl(new maplibregl.NavigationControl(), "top-right");
+// visualizePitch makes the compass tilt with the camera; dragging it rotates,
+// clicking it resets bearing and pitch. Ctrl+drag / right-click-drag rotate
+// and tilt freely (MapLibre default), like Google Maps.
+map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), "top-right");
+
+class PitchControl {
+  onAdd(map) {
+    const div = document.createElement("div");
+    div.className = "maplibregl-ctrl maplibregl-ctrl-group";
+    const mk = (label, title, delta) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.title = title;
+      b.innerHTML = `<span class="pitch-btn">${label}</span>`;
+      b.addEventListener("click", () =>
+        map.easeTo({ pitch: Math.min(85, Math.max(0, map.getPitch() + delta)) })
+      );
+      div.appendChild(b);
+    };
+    mk("▲", "Tilt view (more 3D)", +15);
+    mk("▼", "Flatten view (top-down)", -15);
+    this._div = div;
+    return div;
+  }
+  onRemove() {
+    this._div.remove();
+  }
+}
+map.addControl(new PitchControl(), "top-right");
 map.on("error", (e) => console.error("map error:", e.error?.message || e));
 window._map = map;
 
@@ -129,7 +158,8 @@ map.on("load", () => {
       map.setLayoutProperty(`${srcId}-line`, "visibility", is3d ? "none" : "visible");
       map.setLayoutProperty(`${srcId}-3d`, "visibility", is3d ? "visible" : "none");
     }
-    map.easeTo({ pitch: is3d ? 55 : 0, duration: 800 });
+    document.getElementById("hint3d").style.display = is3d ? "block" : "none";
+    map.easeTo({ pitch: is3d ? 55 : 0, bearing: is3d ? map.getBearing() : 0, duration: 800 });
   });
 
   // Deep-linked parcel selection from highlights pages.
