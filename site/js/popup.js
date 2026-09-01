@@ -34,6 +34,12 @@ export function taxRecordUrl(template, apn) {
   return template.replace("{apn}", encodeURIComponent(apn));
 }
 
+// Google AI Mode (udm=50) asking about the property.
+export function aiSearchUrl(address, city) {
+  const q = `What property is at ${address}, ${city}?`;
+  return `https://www.google.com/search?udm=50&q=${encodeURIComponent(q)}`;
+}
+
 // p: {a, ad, t, ac, tpa, u, n} — tile/rankings properties. county: manifest entry.
 export function popupHtml(p, county, lat, lng) {
   const hasTax = p.tpa != null || p.t === 0;
@@ -48,6 +54,7 @@ export function popupHtml(p, county, lat, lng) {
     [realEstateUrl(p.ad, county.city), "Real estate"],
     [streetViewUrl(p.ad, county.city, lat, lng), "Street View"],
     [taxRecordUrl(county.taxRecordUrl, p.a), "Tax record"],
+    [aiSearchUrl(p.ad, county.city), "AI search"],
   ];
   return `
     <div class="popup">
