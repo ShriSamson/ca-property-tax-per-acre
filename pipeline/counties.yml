@@ -1,0 +1,26 @@
+sf:
+  name: San Francisco
+  csv_code: SF
+  geometry:
+    type: socrata
+    domain: data.sfgov.org
+    dataset: acdm-wktn
+    join_field: blklot
+    footprint_field: mapblklot
+    where: "active = true"
+    select:
+      - shape
+      - blklot
+      - mapblklot
+      - block_num
+      - lot_num
+      - from_address_num
+      - street_name
+      - street_type
+      - analysis_neighborhood
+  apn_normalizer: sf
+  tax_record_url: "https://sanfrancisco-ca.county-taxes.com/public/search?search_query={apn}&category=gsgx_property_tax"
+  zillow_city: "San Francisco, CA"
+  center: [-122.4415, 37.762]
+  zoom: 12.2
+  minzoom: 10

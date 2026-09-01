@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>About — CA Property Tax per Acre</title>
+  <link rel="stylesheet" href="../css/site.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>CA Property Tax <span>per acre</span></h1>
+    <nav>
+      <a href="../">Map</a>
+      <a href="../highlights/sf/">Highlights</a>
+    </nav>
+  </header>
+  <main class="page">
+    <h1>About this map</h1>
+    <p>This map shows <strong>annual property tax revenue per acre of land</strong> for each
+    parcel. Tax per acre is a measure of how productively land generates public revenue: a
+    downtown apartment building and a surface parking lot may occupy similar land, but can
+    differ in tax yield by a factor of 100 or more.</p>
+
+    <h2>Why taxes vary so much: Proposition 13</h2>
+    <p>Under California's Proposition 13 (1978), property is taxed at roughly 1% of its
+    <em>assessed</em> value, and assessed value is set at the purchase price and can grow at
+    most 2% per year until the property is sold. Because market values have grown much faster
+    than 2%, two identical neighboring homes can pay wildly different taxes depending on when
+    they were last sold. This map makes those disparities — and the low yield of underused
+    land — visible.</p>
+
+    <h2>Methodology</h2>
+    <ul>
+      <li><strong>Tax data</strong>: county tax rolls scraped in January 2024 by the
+        <a href="https://github.com/typpo/ca-property-tax">ca-property-tax</a> project
+        (<a href="https://www.officialdata.org/ca-property-tax/">officialdata.org</a>).</li>
+      <li><strong>Parcel boundaries</strong>: county GIS open data (San Francisco:
+        <a href="https://data.sfgov.org/Geographic-Locations-and-Boundaries/Parcels-Active-and-Retired/acdm-wktn">DataSF</a>).
+        Lot area is computed from parcel polygons in an equal-area projection
+        (California Albers, EPSG:3310).</li>
+      <li><strong>Condominiums</strong>: each condo unit is its own tax parcel but shares one
+        physical lot. Units are aggregated to the building footprint; the map shows the
+        <em>sum</em> of all unit taxes divided by the lot's acreage, and popups note how many
+        tax lots were combined.</li>
+      <li><strong>Gray parcels</strong> had no matching record in the tax roll (e.g., recently
+        re-numbered lots). <strong>Purple parcels</strong> pay $0 — typically government,
+        religious, or nonprofit exemptions.</li>
+      <li>Tiny sliver lots (under ~30 sq ft) are excluded from the top/bottom rankings but
+        still drawn on the map.</li>
+    </ul>
+
+    <h2>Caveats</h2>
+    <ul>
+      <li>Tax amounts include parcel taxes, special assessments, and Mello-Roos charges, not
+        just the 1% ad-valorem levy.</li>
+      <li>The tax roll (Jan 2024) and the parcel map (current) are from different dates, so a
+        small share of parcels don't match.</li>
+      <li>Zillow links are best-effort address searches, not verified matches.</li>
+    </ul>
+
+    <p class="muted">Currently covering San Francisco. More counties coming.</p>
+  </main>
+</body>
+</html>
