@@ -22,7 +22,8 @@ def main():
         print(f"Cached geometry exists at {out}; use --force to re-download.")
         return
 
-    print(f"Downloading {cfg['name']} parcels from {cfg['geometry']['domain']}...")
+    source = cfg["geometry"].get("domain") or cfg["geometry"].get("url")
+    print(f"Downloading {cfg['name']} parcels from {source}...")
     gdf = sources.download(cfg["geometry"])
     data_as_of = sources.fetch_data_as_of(cfg["geometry"])
 

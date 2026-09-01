@@ -19,6 +19,12 @@ function parseHash() {
 }
 const hash = parseHash();
 let start = { center: counties[0].center, zoom: counties[0].zoom };
+if (counties.length > 1) {
+  // Show all covered cities on first load.
+  const lng = counties.reduce((s, c) => s + c.center[0], 0) / counties.length;
+  const lat = counties.reduce((s, c) => s + c.center[1], 0) / counties.length;
+  start = { center: [lng, lat], zoom: 10.7 };
+}
 if (hash.map) {
   const [z, lat, lng] = hash.map.split("/").map(Number);
   if ([z, lat, lng].every(Number.isFinite)) start = { center: [lng, lat], zoom: z };
@@ -214,8 +220,8 @@ map.on("moveend", () => {
 buildLegend(document.getElementById("legend"));
 initSearch(map, document.getElementById("search"));
 
-// County stats footer line.
-const s = counties[0].stats;
+// Coverage footer line.
+const totalTaxed = counties.reduce((s, c) => s + c.stats.with_tax, 0);
 document.getElementById("data-note").textContent =
-  `${counties[0].name}: ${s.with_tax.toLocaleString()} taxed parcels · ` +
-  `tax roll ${counties[0].vintage.tax} · parcel map ${counties[0].vintage.parcels}`;
+  `${counties.map((c) => c.name).join(" · ")} — ${totalTaxed.toLocaleString()} taxed parcels · ` +
+  `tax roll ${counties[0].vintage.tax}`;

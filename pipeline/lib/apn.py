@@ -12,8 +12,15 @@ def normalize_sf(apn: str) -> str:
     return apn.strip().upper()
 
 
+def normalize_alameda(apn: str) -> str:
+    # Alameda APNs are dashed book-block-lot(-sub) strings ("1-257-103",
+    # "48-7104-1-2") and match the GIS APN field verbatim.
+    return apn.strip().upper()
+
+
 NORMALIZERS = {
     "sf": normalize_sf,
+    "alameda": normalize_alameda,
 }
 
 

@@ -51,6 +51,10 @@ def main():
     df["apn"] = df["Parcel Number"].map(normalize)
     df["tax"] = pd.to_numeric(df["Annual property tax"], errors="coerce")
     df["address"] = df["Address"].astype(str).str.strip()
+    if cfg.get("address_strip_regex"):
+        # Some county CSVs append "CITY 94704" to every address; strip it so
+        # link builders can add their own city qualifier.
+        df["address"] = df["address"].str.replace(cfg["address_strip_regex"], "", regex=True)
     df["lat"] = pd.to_numeric(df["Latitude"], errors="coerce")
     df["lng"] = pd.to_numeric(df["Longitude"], errors="coerce")
 

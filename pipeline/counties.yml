@@ -7,6 +7,8 @@ sf:
     dataset: acdm-wktn
     join_field: blklot
     footprint_field: mapblklot
+    address_fields: [from_address_num, street_name, street_type]
+    neighborhood_field: analysis_neighborhood
     where: "active = true"
     select:
       - shape
@@ -23,4 +25,25 @@ sf:
   city: "San Francisco, CA"
   center: [-122.4415, 37.762]
   zoom: 12.2
+  minzoom: 10
+
+berkeley:
+  name: Berkeley
+  csv_code: AL
+  subset: true  # geometry covers one city; most county tax rows won't match
+  address_strip_regex: '\s+BERKELEY\s+\d{5}$'  # CSV addresses end with "BERKELEY 94704"
+  geometry:
+    type: arcgis
+    url: "https://services5.arcgis.com/ROBnTHSNjoZ2Wm1P/ArcGIS/rest/services/Parcels/FeatureServer/0"
+    join_field: APN
+    footprint_strategy: geometry  # condo lots are stacked identical polygons
+    address_fields: [SitusStreetNumber, SitusStreetName]
+    where: "SitusCity = 'BERKELEY'"
+    select: [APN, SitusStreetNumber, SitusStreetName, SitusCity, SitusZip]
+  apn_normalizer: alameda
+  # The county tax portal has no per-APN deep link; popup shows the APN to paste.
+  tax_record_url: "https://propertytax.alamedacountyca.gov/search"
+  city: "Berkeley, CA"
+  center: [-122.272, 37.867]
+  zoom: 13
   minzoom: 10

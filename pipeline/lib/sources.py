@@ -1,8 +1,4 @@
-"""Geometry source drivers. Currently: Socrata (SODA GeoJSON endpoint).
-
-An ArcGIS FeatureServer driver will be added when the first non-Socrata
-county lands.
-"""
+"""Geometry source drivers: Socrata (SODA GeoJSON) and ArcGIS FeatureServer."""
 import os
 import time
 
@@ -64,14 +60,50 @@ def download_socrata(geom_cfg: dict) -> gpd.GeoDataFrame:
     return gdf
 
 
+def download_arcgis(geom_cfg: dict) -> gpd.GeoDataFrame:
+    """Page through an ArcGIS FeatureServer layer query endpoint."""
+    url = f"{geom_cfg['url']}/query"
+    page_size = geom_cfg.get("page_size", 2000)
+    params_base = {
+        "where": geom_cfg.get("where", "1=1"),
+        "outFields": ",".join(geom_cfg["select"]),
+        "outSR": 4326,
+        "f": "geojson",
+        "resultRecordCount": page_size,
+        "orderByFields": geom_cfg.get("order_by", "OBJECTID"),
+    }
+
+    pages = []
+    offset = 0
+    while True:
+        params = dict(params_base, resultOffset=offset)
+        resp = _get_with_retry(url, params, {})
+        page = gpd.read_file(resp.text)
+        print(f"  fetched {len(page)} rows at offset {offset}")
+        if len(page) == 0:
+            break
+        pages.append(page)
+        if len(page) < page_size:
+            break
+        offset += page_size
+
+    return gpd.GeoDataFrame(pd.concat(pages, ignore_index=True), crs=pages[0].crs)
+
+
 def fetch_data_as_of(geom_cfg: dict) -> str:
-    """Ask the Socrata metadata API when the dataset was last updated."""
-    url = f"https://{geom_cfg['domain']}/api/views/{geom_cfg['dataset']}.json"
+    """Best-effort 'last updated' date from the source's metadata API."""
     try:
-        meta = requests.get(url, timeout=60).json()
-        ts = meta.get("rowsUpdatedAt") or meta.get("viewLastModified")
-        if ts:
-            return time.strftime("%Y-%m-%d", time.gmtime(ts))
+        if geom_cfg["type"] == "socrata":
+            url = f"https://{geom_cfg['domain']}/api/views/{geom_cfg['dataset']}.json"
+            meta = requests.get(url, timeout=60).json()
+            ts = meta.get("rowsUpdatedAt") or meta.get("viewLastModified")
+            if ts:
+                return time.strftime("%Y-%m-%d", time.gmtime(ts))
+        elif geom_cfg["type"] == "arcgis":
+            meta = requests.get(geom_cfg["url"], params={"f": "json"}, timeout=60).json()
+            ts = (meta.get("editingInfo") or {}).get("lastEditDate")
+            if ts:
+                return time.strftime("%Y-%m-%d", time.gmtime(ts / 1000))
     except requests.RequestException:
         pass
     return "unknown"
@@ -80,4 +112,6 @@ def fetch_data_as_of(geom_cfg: dict) -> str:
 def download(geom_cfg: dict) -> gpd.GeoDataFrame:
     if geom_cfg["type"] == "socrata":
         return download_socrata(geom_cfg)
+    if geom_cfg["type"] == "arcgis":
+        return download_arcgis(geom_cfg)
     raise SystemExit(f"Unknown geometry source type '{geom_cfg['type']}'")

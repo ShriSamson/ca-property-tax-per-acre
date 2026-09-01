@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Highlights — CA Property Tax per Acre</title>
+  <link rel="stylesheet" href="../css/site.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>CA Property Tax <span>per acre</span></h1>
+    <nav>
+      <a href="../">Map</a>
+      <a href="../about/">About</a>
+    </nav>
+  </header>
+  <main class="page">
+    <h1>City highlights</h1>
+    <p class="muted">Top and bottom 100 parcels by tax revenue per acre in each city.</p>
+    <ul id="cities" class="city-list"></ul>
+  </main>
+  <script type="module">
+    const manifest = await (await fetch("../data/counties.json")).json();
+    document.getElementById("cities").innerHTML = manifest.counties
+      .map((c) => {
+        const s = c.stats;
+        return `<li><a href="${c.id}/">${c.name}</a>
+          <span class="muted">${s.with_tax.toLocaleString()} taxed parcels ·
+          median $${Math.round(s.median_tpa).toLocaleString()}/acre</span></li>`;
+      })
+      .join("");
+  </script>
+</body>
+</html>
