@@ -1,15 +1,17 @@
 // Single source of truth for the tax-per-acre color scale.
 // Breaks are log10(tax per acre): 10^3 = $1k/acre ... 10^7 = $10M/acre.
 export const NO_DATA_COLOR = "#d4d4d0";
-export const ZERO_TAX_COLOR = "#9b8ec4";
+export const ZERO_TAX_COLOR = "#c9a96b";
 
+// Single-hue sequential ramp: light blue → dark navy, darkness increasing
+// monotonically with tax per acre (ColorBrewer Blues).
 export const RAMP = [
-  { log: 3, color: "#2c7bb6", label: "$1k" },
-  { log: 4, color: "#7fb8d4", label: "$10k" },
-  { log: 4.7, color: "#c7e2c0", label: "$50k" },
-  { log: 5.3, color: "#fee08b", label: "$200k" },
-  { log: 6, color: "#fdae61", label: "$1M" },
-  { log: 7, color: "#d7191c", label: "$10M+" },
+  { log: 3, color: "#eff6fc", label: "$1k" },
+  { log: 4, color: "#c6dbef", label: "$10k" },
+  { log: 4.7, color: "#9ecae1", label: "$50k" },
+  { log: 5.3, color: "#6baed6", label: "$200k" },
+  { log: 6, color: "#2b7bba", label: "$1M" },
+  { log: 7, color: "#08306b", label: "$10M+" },
 ];
 
 // MapLibre paint expression: gray for no data, purple for $0 (exempt),

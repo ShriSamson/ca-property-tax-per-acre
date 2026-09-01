@@ -16,7 +16,14 @@ export function zillowUrl(address, zillowCity) {
   return `https://www.zillow.com/homes/${encodeURIComponent(address + ", " + zillowCity)}_rb/`;
 }
 
-export function streetViewUrl(lat, lng) {
+// Coordinate-based pano links snap to the nearest panorama, which for
+// parcel-interior points is often a user photosphere or nothing. The
+// address-pinned place page reliably surfaces official Street View imagery
+// of the property, so prefer it whenever we have an address.
+export function streetViewUrl(address, city, lat, lng) {
+  if (address) {
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address + ", " + city)}`;
+  }
   return `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${lat},${lng}`;
 }
 
@@ -36,7 +43,7 @@ export function popupHtml(p, county, lat, lng) {
   ];
   const links = [
     [zillowUrl(p.ad, county.zillowCity), "Zillow"],
-    [streetViewUrl(lat, lng), "Street View"],
+    [streetViewUrl(p.ad, county.zillowCity, lat, lng), "Street View"],
     [taxRecordUrl(county.taxRecordUrl, p.a), "Tax record"],
   ];
   return `

@@ -21,7 +21,7 @@ function row(e, i) {
     <td class="num">${e.acres.toFixed(3)}</td>
     <td class="num">${fmtMoney(e.tpa)}</td>
     <td><a href="${zillowUrl(e.address, county.zillowCity)}" target="_blank" rel="noopener">Z</a>
-        <a href="${streetViewUrl(e.lat, e.lng)}" target="_blank" rel="noopener">SV</a>
+        <a href="${streetViewUrl(e.address, county.zillowCity, e.lat, e.lng)}" target="_blank" rel="noopener">SV</a>
         <a href="${taxRecordUrl(county.taxRecordUrl, e.apn)}" target="_blank" rel="noopener">Tax</a></td>
   </tr>`;
 }
