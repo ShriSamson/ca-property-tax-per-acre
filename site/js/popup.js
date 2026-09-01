@@ -12,8 +12,11 @@ export function fmtAcres(acres) {
   return `${acres.toFixed(4)} acres (${sqftStr})`;
 }
 
-export function zillowUrl(address, zillowCity) {
-  return `https://www.zillow.com/homes/${encodeURIComponent(address + ", " + zillowCity)}_rb/`;
+// Direct Zillow deep links get bot-blocked; a Google search scoped to the
+// big listing sites reliably surfaces the property page instead.
+export function realEstateUrl(address, city) {
+  const q = `${address}, ${city} (site:zillow.com OR site:redfin.com)`;
+  return `https://www.google.com/search?q=${encodeURIComponent(q)}`;
 }
 
 // Coordinate-based pano links snap to the nearest panorama, which for
@@ -42,8 +45,8 @@ export function popupHtml(p, county, lat, lng) {
     ["Tax / acre", hasTax ? fmtMoney(p.tpa ?? 0) : "no data"],
   ];
   const links = [
-    [zillowUrl(p.ad, county.zillowCity), "Zillow"],
-    [streetViewUrl(p.ad, county.zillowCity, lat, lng), "Street View"],
+    [realEstateUrl(p.ad, county.city), "Real estate"],
+    [streetViewUrl(p.ad, county.city, lat, lng), "Street View"],
     [taxRecordUrl(county.taxRecordUrl, p.a), "Tax record"],
   ];
   return `

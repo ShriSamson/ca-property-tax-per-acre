@@ -1,6 +1,6 @@
 // Renders the top/bottom-100 rankings tables for a county highlights page.
 // The page sets window.COUNTY_ID before loading this module.
-import { fmtMoney, zillowUrl, streetViewUrl, taxRecordUrl } from "./popup.js";
+import { fmtMoney, realEstateUrl, streetViewUrl, taxRecordUrl } from "./popup.js";
 
 const countyId = window.COUNTY_ID;
 const [manifest, rankings] = await Promise.all([
@@ -20,8 +20,8 @@ function row(e, i) {
     <td class="num">${fmtMoney(e.tax)}</td>
     <td class="num">${e.acres.toFixed(3)}</td>
     <td class="num">${fmtMoney(e.tpa)}</td>
-    <td><a href="${zillowUrl(e.address, county.zillowCity)}" target="_blank" rel="noopener">Z</a>
-        <a href="${streetViewUrl(e.address, county.zillowCity, e.lat, e.lng)}" target="_blank" rel="noopener">SV</a>
+    <td><a href="${realEstateUrl(e.address, county.city)}" target="_blank" rel="noopener">RE</a>
+        <a href="${streetViewUrl(e.address, county.city, e.lat, e.lng)}" target="_blank" rel="noopener">SV</a>
         <a href="${taxRecordUrl(county.taxRecordUrl, e.apn)}" target="_blank" rel="noopener">Tax</a></td>
   </tr>`;
 }

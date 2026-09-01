@@ -72,7 +72,7 @@ def main():
         "zoom": cfg["zoom"],
         "minzoom": cfg["minzoom"],
         "taxRecordUrl": cfg["tax_record_url"],
-        "zillowCity": cfg["zillow_city"],
+        "city": cfg["city"],
         "vintage": {"tax": "2024-01", "parcels": meta["data_as_of"]},
         "stats": rankings["stats"],
     })
