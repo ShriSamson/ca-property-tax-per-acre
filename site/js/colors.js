@@ -30,12 +30,14 @@ export function fillColorExpression() {
   ];
 }
 
-// 3D bar height: log scale, 200m of height per decade of tax/acre above $1k.
+// 3D bar height: square-root scale. Log compressed everything into a ~2x
+// band; sqrt keeps low-value parcels visible while letting high earners
+// tower ~15x over the median ($130k/acre ≈ 90m, $1M ≈ 250m, $39M ≈ 1560m).
 export function extrusionHeightExpression() {
   return [
     "case",
     ["!", ["has", "tpa"]], 0,
-    ["*", 200, ["max", 0, ["-", ["log10", ["max", ["get", "tpa"], 1]], 3]]],
+    ["*", 0.25, ["sqrt", ["max", ["get", "tpa"], 0]]],
   ];
 }
 
