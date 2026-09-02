@@ -7,7 +7,7 @@ import json
 
 import geopandas as gpd
 
-from lib import config
+from lib import config, enrich
 
 
 def entry(row) -> dict:
@@ -41,11 +41,18 @@ def main():
     ].sort_values("tax_per_acre", ascending=False)
     exempt = parcels[parcels["tax_total"] == 0]
 
+    top = [entry(r) for r in ranked.head(100).itertuples()]
+    bottom = [entry(r) for r in ranked.tail(100).iloc[::-1].itertuples()]
+    descriptions = enrich.describe(cfg, top + bottom)
+    print(f"Descriptions resolved for {len(descriptions)} of {len(top) + len(bottom)} entries")
+    for e in top + bottom:
+        e["desc"] = descriptions.get(e["apn"])
+
     rankings = {
         "county": args.county,
         "name": cfg["name"],
-        "top": [entry(r) for r in ranked.head(100).itertuples()],
-        "bottom": [entry(r) for r in ranked.tail(100).iloc[::-1].itertuples()],
+        "top": top,
+        "bottom": bottom,
         "exempt_count": int(len(exempt)),
         "stats": {
             "parcels": int(len(parcels)),

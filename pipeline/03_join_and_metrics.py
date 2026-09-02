@@ -66,6 +66,17 @@ def main():
         parts = [row.get(f) for f in address_fields]
         return " ".join(str(p) for p in parts if p and str(p) != "nan").strip()
 
+    neighborhood_map = cfg.get("neighborhood_map")
+
+    def neighborhood_of(row):
+        if not neighborhood_field:
+            return None
+        value = row.get(neighborhood_field)
+        if value is None or str(value) == "nan":
+            return None
+        value = str(value).strip()
+        return neighborhood_map.get(value, None) if neighborhood_map else value
+
     uses_field_key = footprint_field != "_fp_key"
     groups = []
     dissolve_fallbacks = 0
@@ -91,7 +102,7 @@ def main():
         groups.append({
             "apn": apn,
             "address": address,
-            "neighborhood": g.iloc[0].get(neighborhood_field) if neighborhood_field else None,
+            "neighborhood": neighborhood_of(g.iloc[0]),
             "tax_total": float(taxed["tax"].sum()) if len(taxed) else None,
             "units": int(len(taxed)),
             "geometry": geometry,

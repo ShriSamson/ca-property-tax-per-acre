@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>San Francisco Highlights — CA Property Tax per Acre</title>
+  <link rel="stylesheet" href="../../vendor/maplibre-gl.css" />
   <link rel="stylesheet" href="../../css/site.css" />
 </head>
 <body>
@@ -26,6 +27,9 @@
     </div>
     <div id="rankings"></div>
   </main>
+  <div id="minimap"></div>
+  <script src="../../vendor/maplibre-gl.js"></script>
+  <script src="../../vendor/pmtiles.js"></script>
   <script>window.COUNTY_ID = "sf";</script>
   <script type="module" src="../../js/highlights.js"></script>
 </body>

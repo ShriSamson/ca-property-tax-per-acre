@@ -106,3 +106,17 @@ html, body { margin: 0; height: 100%; font-family: -apple-system, "Segoe UI", Ro
 .city-list li { padding: 10px 0; border-bottom: 1px solid #eee; }
 .city-list a { font-size: 17px; font-weight: 600; color: #2c7bb6; text-decoration: none; margin-right: 10px; }
 .city-list a:hover { text-decoration: underline; }
+
+.rank-table th.sortable { cursor: pointer; user-select: none; white-space: nowrap; }
+.rank-table th.sortable:hover { background: #f0f0f0; }
+.sort-arrow { color: #bbb; font-size: 10px; }
+.sort-arrow.active { color: #2c7bb6; }
+.desc { font-size: 11px; margin-top: 1px; }
+
+#minimap {
+  display: none; position: fixed; z-index: 40;
+  width: 280px; height: 200px;
+  border: 2px solid #fff; border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  overflow: hidden; pointer-events: none;
+}
