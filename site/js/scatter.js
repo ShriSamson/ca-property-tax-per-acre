@@ -22,6 +22,7 @@ const ZONE_CATEGORIES = [
   { key: "other", label: "Other / unknown", color: "#cccccc" },
 ];
 const CAT_COLOR = Object.fromEntries(ZONE_CATEGORIES.map((c) => [c.key, c.color]));
+const activeCats = new Set(ZONE_CATEGORIES.map((c) => c.key));
 
 function zoneCategory(code) {
   const c = (code || "").toUpperCase();
@@ -146,8 +147,12 @@ function draw() {
   ctx.globalAlpha = byZone ? 0.55 : 0.45;
   for (const p of points) {
     if (p[0] <= 0) continue;
+    if (byZone) {
+      const cat = zoneCategory(p[6]);
+      if (!activeCats.has(cat)) continue;
+      ctx.fillStyle = CAT_COLOR[cat];
+    }
     const x = X(p[0]), y = Y(p[1]);
-    if (byZone) ctx.fillStyle = CAT_COLOR[zoneCategory(p[6])];
     ctx.fillRect(x - 2.25, y - 2.25, 4.5, 4.5);
     const key = ((x / 14) | 0) + ":" + ((y / 14) | 0);
     if (!grid.has(key)) grid.set(key, []);
@@ -158,12 +163,22 @@ function draw() {
   legendEl.style.display = byZone ? "block" : "none";
   if (byZone) {
     legendEl.innerHTML =
-      `<div class="legend-title">Zoning</div>` +
+      `<div class="legend-title">Zoning <span class="muted">(click to toggle)</span></div>` +
       ZONE_CATEGORIES.map(
-        (c) => `<div class="legend-row"><span class="swatch" style="background:${c.color}"></span>${c.label}</div>`
+        (c) => `<div class="legend-row legend-toggle${activeCats.has(c.key) ? "" : " off"}" data-cat="${c.key}">
+          <span class="swatch" style="background:${c.color}"></span>${c.label}</div>`
       ).join("");
   }
 }
+
+legendEl.addEventListener("click", (e) => {
+  const row = e.target.closest(".legend-toggle");
+  if (!row) return;
+  const cat = row.dataset.cat;
+  if (activeCats.has(cat)) activeCats.delete(cat);
+  else activeCats.add(cat);
+  draw();
+});
 
 function fmtPow(e) {
   return e >= 6 ? 10 ** (e - 6) + "M" : e >= 3 ? 10 ** (e - 3) + "k" : String(10 ** e);

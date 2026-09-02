@@ -142,6 +142,10 @@ html, body { margin: 0; height: 100%; font-family: -apple-system, "Segoe UI", Ro
   padding: 8px 12px; font-size: 12px;
 }
 .scatter-tip .muted { color: #888; }
+.legend-toggle { cursor: pointer; user-select: none; }
+.legend-toggle:hover { background: #f2f2f2; border-radius: 4px; }
+.legend-toggle.off { opacity: 0.35; text-decoration: line-through; }
+.scatter-legend .legend-title .muted { font-weight: 400; font-size: 10px; color: #999; }
 
 #minimap {
   display: none; position: fixed; z-index: 40;
