@@ -1,5 +1,6 @@
 // Scatter view: one dot per taxed lot. X = annual tax (log), Y = lot size
 // (log, inverted so small lots are at the top) — high tax/acre = top right.
+import { popupHtml } from "./popup.js";
 
 const MARGIN = { top: 24, right: 70, bottom: 46, left: 64 };
 
@@ -119,7 +120,7 @@ function draw() {
   for (const p of points) {
     if (p[0] <= 0) continue;
     const x = X(p[0]), y = Y(p[1]);
-    ctx.fillRect(x - 1.4, y - 1.4, 2.8, 2.8);
+    ctx.fillRect(x - 2.25, y - 2.25, 4.5, 4.5);
     const key = ((x / 14) | 0) + ":" + ((y / 14) | 0);
     if (!grid.has(key)) grid.set(key, []);
     grid.get(key).push([x, y, p]);
@@ -156,14 +157,40 @@ canvas.addEventListener("mousemove", (e) => {
     `<strong>$${Math.round(tax / ac).toLocaleString()}/acre</strong>`;
 });
 canvas.addEventListener("mouseleave", () => (tip.style.display = "none"));
+
+// Click popup — same content and links as the map view, plus "View on map".
+const popupEl = document.getElementById("scatter-popup");
+
+function linkCounty() {
+  const county =
+    manifest.counties.find((c) => c.id === select.value) ||
+    manifest.counties.find((c) => select.value.startsWith(c.id + "-"));
+  // City sub-pages embed the city in the address, so links only append ", CA".
+  return select.value === county.id ? county : { ...county, city: "CA" };
+}
+
 canvas.addEventListener("click", (e) => {
   const r = canvas.getBoundingClientRect();
   const p = nearest(e.clientX - r.left, e.clientY - r.top);
-  if (p) location.href = `../#map=17.5/${p[2]}/${p[3]}&sel=${encodeURIComponent(p[4])}`;
+  if (!p) { popupEl.style.display = "none"; return; }
+  const [tax, ac, lat, lng, apn, address] = p;
+  const props = { a: apn, ad: address, t: tax, ac, tpa: Math.round(tax / ac), u: 1 };
+  popupEl.innerHTML =
+    `<button class="info-close" aria-label="Close">&times;</button>` +
+    popupHtml(props, linkCounty(), lat, lng) +
+    `<div class="popup-links"><a href="../#map=17.5/${lat}/${lng}&sel=${encodeURIComponent(apn)}">View on map</a></div>`;
+  popupEl.style.display = "block";
+  popupEl.style.left = Math.min(e.clientX + 16, window.innerWidth - 340) + "px";
+  popupEl.style.top = Math.min(e.clientY + 8, window.innerHeight - 260) + "px";
+  tip.style.display = "none";
+});
+popupEl.addEventListener("click", (e) => {
+  if (e.target.closest(".info-close")) popupEl.style.display = "none";
 });
 
 async function load(id) {
   tip.style.display = "none";
+  popupEl.style.display = "none";
   const data = await (await fetch(`../data/scatter/${id}.json`)).json();
   points = data.points;
   draw();

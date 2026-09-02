@@ -1,7 +1,8 @@
 """Emit compact per-city scatter data: one point per taxed lot.
 
-Point format: [annual tax, acres, lat, lng, apn] — kept terse because the
-biggest cities are ~100k lots. Page ids match the rankings/highlights ids.
+Point format: [annual tax, acres, lat, lng, apn, address] — kept terse
+because the biggest cities are ~100k lots. Page ids match the
+rankings/highlights ids.
 
 Usage: python 08_scatter_data.py --county sf
 """
@@ -18,8 +19,10 @@ def dump(page_id: str, name: str, parcels):
     sub = parcels[parcels["tax_total"].notna() & (parcels["acres"] > 0)]
     rp = sub.geometry.representative_point()
     pts = [
-        [round(t), round(a, 5), round(y, 5), round(x, 5), apn]
-        for t, a, y, x, apn in zip(sub["tax_total"], sub["acres"], rp.y, rp.x, sub["apn"])
+        [round(t), round(a, 5), round(y, 5), round(x, 5), apn, ad or ""]
+        for t, a, y, x, apn, ad in zip(
+            sub["tax_total"], sub["acres"], rp.y, rp.x, sub["apn"], sub["address"]
+        )
     ]
     out_dir = config.SITE_DIR / "data" / "scatter"
     out_dir.mkdir(parents=True, exist_ok=True)
