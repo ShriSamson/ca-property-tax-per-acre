@@ -14,11 +14,11 @@ html, body { margin: 0; height: 100%; font-family: -apple-system, "Segoe UI", Ro
   border: 1px solid #ccc; border-radius: 6px; font-size: 14px;
 }
 .topbar input.search-miss { border-color: #d7191c; background: #fff5f5; }
-.topbar #toggle3d {
+.topbar #toggle3d, .topbar #toggleSat {
   padding: 6px 14px; border: 1px solid #ccc; border-radius: 6px; background: #fff;
   font-size: 13px; font-weight: 600; cursor: pointer;
 }
-.topbar #toggle3d.active { background: #2171b5; color: #fff; border-color: #2171b5; }
+.topbar #toggle3d.active, .topbar #toggleSat.active { background: #2171b5; color: #fff; border-color: #2171b5; }
 .topbar nav { margin-left: auto; display: flex; gap: 14px; }
 .topbar nav a { color: #333; text-decoration: none; font-size: 14px; }
 .topbar nav a:hover { text-decoration: underline; }

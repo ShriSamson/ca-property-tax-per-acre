@@ -69,9 +69,30 @@ map.addControl(new PitchControl(), "top-right");
 map.on("error", (e) => console.error("map error:", e.error?.message || e));
 window._map = map;
 
+const fillOpacity = (sat) => [
+  "case",
+  ["boolean", ["feature-state", "selected"], false], 0.95,
+  ["boolean", ["feature-state", "hover"], false], 0.85,
+  sat ? 0.35 : 0.6,
+];
+
 map.on("load", () => {
   // Keep basemap labels above the parcel layers.
   const firstSymbol = map.getStyle().layers.find((l) => l.type === "symbol")?.id;
+
+  // Optional satellite imagery, under the parcel layers.
+  map.addSource("satellite", {
+    type: "raster",
+    tiles: ["https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"],
+    tileSize: 256,
+    maxzoom: 19,
+    attribution: "Imagery &copy; Esri, Maxar, Earthstar Geographics",
+  });
+  map.addLayer(
+    { id: "satellite", type: "raster", source: "satellite", layout: { visibility: "none" } },
+    firstSymbol
+  );
+
   for (const county of counties) {
     const srcId = `parcels-${county.id}`;
     map.addSource(srcId, {
@@ -86,12 +107,7 @@ map.on("load", () => {
       "source-layer": "parcels",
       paint: {
         "fill-color": fillColorExpression(),
-        "fill-opacity": [
-          "case",
-          ["boolean", ["feature-state", "selected"], false], 0.95,
-          ["boolean", ["feature-state", "hover"], false], 0.85,
-          0.6,
-        ],
+        "fill-opacity": fillOpacity(false),
       },
     }, firstSymbol);
     map.addLayer({
@@ -152,6 +168,20 @@ map.on("load", () => {
       });
     }
   }
+
+  const btnSat = document.getElementById("toggleSat");
+  let isSat = false;
+  btnSat.addEventListener("click", () => {
+    isSat = !isSat;
+    btnSat.classList.toggle("active", isSat);
+    map.setLayoutProperty("satellite", "visibility", isSat ? "visible" : "none");
+    for (const county of counties) {
+      const srcId = `parcels-${county.id}`;
+      // Thin the tint over imagery so building footprints stay readable.
+      map.setPaintProperty(`${srcId}-fill`, "fill-opacity", fillOpacity(isSat));
+      map.setPaintProperty(`${srcId}-3d`, "fill-extrusion-opacity", isSat ? 0.55 : 0.9);
+    }
+  });
 
   const btn3d = document.getElementById("toggle3d");
   let is3d = false;
