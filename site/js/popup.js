@@ -78,8 +78,9 @@ export function popupHtml(p, county, lat, lng) {
   const hasTax = p.tpa != null || p.t === 0;
   const condoNote =
     p.u > 1 ? `<div class="popup-note">Condo building — ${p.u} tax lots aggregated</div>` : "";
+  const vintage = county.vintage?.tax?.split(" ")[0];
   const rows = [
-    ["Annual tax", fmtMoney(p.t)],
+    [`Annual tax${vintage ? ` <span class="popup-vintage">(${vintage})</span>` : ""}`, fmtMoney(p.t)],
     ["Lot size", p.ac != null ? fmtAcres(p.ac) : "—"],
     ["Tax / acre", hasTax ? fmtMoney(p.tpa ?? 0) : "no data"],
   ];

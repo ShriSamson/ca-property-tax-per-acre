@@ -81,6 +81,7 @@ html, body { margin: 0; height: 100%; font-family: -apple-system, "Segoe UI", Ro
 .info-close:hover { color: #000; }
 .popup-table { border-collapse: collapse; margin: 4px 0; }
 .popup-table td { padding: 1px 10px 1px 0; }
+.popup-vintage { color: #999; font-weight: 400; font-size: 11px; }
 .popup-table td:last-child { font-weight: 600; text-align: right; padding-right: 0; }
 .popup-links { margin-top: 6px; border-top: 1px solid #eee; padding-top: 6px; }
 .popup-links a { color: #2c7bb6; text-decoration: none; }
@@ -104,6 +105,8 @@ html, body { margin: 0; height: 100%; font-family: -apple-system, "Segoe UI", Ro
 .tabs button.active { background: #2c7bb6; color: #fff; border-color: #2c7bb6; }
 .city-list { list-style: none; padding: 0; }
 .city-list li { padding: 10px 0; border-bottom: 1px solid #eee; }
+.city-list li.sub { padding: 6px 0 6px 26px; }
+.city-list li.sub a { font-size: 14px; font-weight: 500; }
 .city-list a { font-size: 17px; font-weight: 600; color: #2c7bb6; text-decoration: none; margin-right: 10px; }
 .city-list a:hover { text-decoration: underline; }
 
