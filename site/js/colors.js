@@ -4,19 +4,19 @@
 export const NO_DATA_COLOR = "#d4d4d0";
 export const ZERO_TAX_COLOR = "#9b8ec4";
 
-// Light cool blue (low tax/acre) → golden yellow (high), via steel blue
-// and olive so the progression reads as steadily increasing intensity.
+// Two clean families with no muddy transition: the bottom five buckets run
+// light → dark blue, the top five jump to light → saturated golden yellow.
 export const BUCKETS = [
-  { min: 0,         color: "#e8f4fb", label: "< $10k" },
-  { min: 10_000,    color: "#c9e4f6", label: "$10k – 25k" },
-  { min: 25_000,    color: "#a6d0ec", label: "$25k – 50k" },
-  { min: 50_000,    color: "#83b8dd", label: "$50k – 100k" },
-  { min: 100_000,   color: "#6699c4", label: "$100k – 200k" },
-  { min: 200_000,   color: "#7f96a0", label: "$200k – 400k" },
-  { min: 400_000,   color: "#a29a6c", label: "$400k – 800k" },
-  { min: 800_000,   color: "#c6a13d", label: "$800k – 1.6M" },
-  { min: 1_600_000, color: "#e5ad15", label: "$1.6M – 3M" },
-  { min: 3_000_000, color: "#ffc300", label: "$3M+" },
+  { min: 0,         color: "#e3f2fb", label: "< $10k" },
+  { min: 10_000,    color: "#b8d9f0", label: "$10k – 25k" },
+  { min: 25_000,    color: "#8bbfe3", label: "$25k – 50k" },
+  { min: 50_000,    color: "#5a9fd2", label: "$50k – 100k" },
+  { min: 100_000,   color: "#2b7bba", label: "$100k – 200k" },
+  { min: 200_000,   color: "#fff3c4", label: "$200k – 400k" },
+  { min: 400_000,   color: "#ffe58f", label: "$400k – 800k" },
+  { min: 800_000,   color: "#ffd545", label: "$800k – 1.6M" },
+  { min: 1_600_000, color: "#ffc107", label: "$1.6M – 3M" },
+  { min: 3_000_000, color: "#f59f00", label: "$3M+" },
 ];
 
 // MapLibre paint expression: gray for no data, tan for $0 (exempt),
