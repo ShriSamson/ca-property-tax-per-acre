@@ -56,6 +56,29 @@ html, body { margin: 0; height: 100%; font-family: -apple-system, "Segoe UI", Ro
 .popup-addr { font-weight: 600; font-size: 14px; }
 .popup-apn { color: #777; font-size: 11px; margin-bottom: 4px; }
 .popup-note { background: #f0ecfa; color: #5b4a9e; border-radius: 4px; padding: 2px 6px; font-size: 11px; margin: 4px 0; }
+.popup-info-btn {
+  border: none; background: none; color: #5b4a9e; cursor: pointer;
+  font-size: 13px; padding: 0 2px; vertical-align: middle; line-height: 1;
+}
+.popup-info-btn:hover { color: #2c1e70; }
+
+.info-modal {
+  display: none; position: fixed; inset: 0; z-index: 50;
+  background: rgba(0,0,0,0.35); align-items: center; justify-content: center;
+}
+.info-modal.open { display: flex; }
+.info-card {
+  position: relative; background: #fff; border-radius: 10px; max-width: 440px;
+  margin: 20px; padding: 18px 22px; font-size: 14px; line-height: 1.55;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+}
+.info-card h3 { margin: 0 30px 8px 0; font-size: 16px; }
+.info-card p { margin: 8px 0; }
+.info-close {
+  position: absolute; top: 8px; right: 10px; border: none; background: none;
+  font-size: 22px; color: #888; cursor: pointer; line-height: 1;
+}
+.info-close:hover { color: #000; }
 .popup-table { border-collapse: collapse; margin: 4px 0; }
 .popup-table td { padding: 1px 10px 1px 0; }
 .popup-table td:last-child { font-weight: 600; text-align: right; padding-right: 0; }

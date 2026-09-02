@@ -40,6 +40,39 @@ export function aiSearchUrl(address, city) {
   return `https://www.google.com/search?udm=50&q=${encodeURIComponent(q)}`;
 }
 
+const INFO_HTML = `
+  <div class="info-card">
+    <button class="info-close" aria-label="Close">&times;</button>
+    <h3>What is ad-valorem tax?</h3>
+    <p><em>Ad valorem</em> ("according to value") is the part of a California
+    property tax bill charged as a percentage of the property's <strong>assessed
+    value</strong>: a 1% base rate set by Proposition 13, plus locally approved
+    bond rates — about 1.23% total in central Berkeley. Under Prop 13 the
+    assessed value is set at the purchase price and can grow at most 2% per
+    year until the property is sold.</p>
+    <p>The amount shown here is computed from the county's published 2025–26
+    assessed-value roll and each parcel's tax-rate-area rate. Real bills also
+    include <strong>parcel taxes and special assessments</strong> (schools,
+    library, parks, EMS — usually flat or per-square-foot charges that don't
+    depend on value), which aren't included, so an actual Berkeley bill is
+    typically 20–30% higher than the ad-valorem amount alone.</p>
+  </div>`;
+
+// One shared modal + delegated click handling (popup DOM is recreated per click).
+function ensureInfoModal() {
+  if (document.getElementById("info-modal")) return;
+  const modal = document.createElement("div");
+  modal.id = "info-modal";
+  modal.className = "info-modal";
+  modal.innerHTML = INFO_HTML;
+  document.body.appendChild(modal);
+  document.addEventListener("click", (e) => {
+    if (e.target.closest(".popup-info-btn")) modal.classList.add("open");
+    else if (e.target.closest(".info-close") || e.target === modal) modal.classList.remove("open");
+  });
+}
+ensureInfoModal();
+
 // p: {a, ad, t, ac, tpa, u, n} — tile/rankings properties. county: manifest entry.
 export function popupHtml(p, county, lat, lng) {
   const hasTax = p.tpa != null || p.t === 0;
@@ -64,7 +97,8 @@ export function popupHtml(p, county, lat, lng) {
       <table class="popup-table">${rows
         .map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`)
         .join("")}</table>
-      ${county.taxNote ? `<div class="popup-note">${county.taxNote}</div>` : ""}
+      ${county.taxNote ? `<div class="popup-note">${county.taxNote}
+        <button class="popup-info-btn" title="What does ad-valorem tax mean?" aria-label="Explain ad-valorem tax">&#9432;</button></div>` : ""}
       <div class="popup-links">${links
         .map(([href, label]) => `<a href="${href}" target="_blank" rel="noopener">${label}</a>`)
         .join(" · ")}</div>
