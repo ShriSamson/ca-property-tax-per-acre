@@ -30,14 +30,14 @@ export function fillColorExpression() {
   ];
 }
 
-// 3D bar height: square-root scale. Log compressed everything into a ~2x
-// band; sqrt keeps low-value parcels visible while letting high earners
-// tower ~15x over the median ($130k/acre ≈ 90m, $1M ≈ 250m, $39M ≈ 1560m).
+// 3D bar height: pure linear — 10x the tax/acre is exactly 10x the height.
+// 40m per $1M/acre: bottom bucket (<$10k) is <0.4m (flat), median ~5m,
+// $1M/acre = 40m, $10M = 400m, the $39M/acre peak = ~1560m.
 export function extrusionHeightExpression() {
   return [
     "case",
     ["!", ["has", "tpa"]], 0,
-    ["*", 0.25, ["sqrt", ["max", ["get", "tpa"], 0]]],
+    ["*", 0.00004, ["max", ["get", "tpa"], 0]],
   ];
 }
 
