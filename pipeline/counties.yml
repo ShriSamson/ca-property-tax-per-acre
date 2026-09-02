@@ -25,6 +25,7 @@ sf:
     type: socrata_geojson
     url: "https://data.sfgov.org/resource/xzez-p3nc.geojson?$limit=5000"
     code_field: zoning
+    style: sf
   description_source: sf_roll
   vintage_tax: "2020–21 roll"
   tax_record_url: "https://sanfrancisco-ca.county-taxes.com/public/search?search_query={apn}&category=gsgx_property_tax"
@@ -66,6 +67,7 @@ berkeley:
     url: "https://data.cityofberkeley.info/resource/iknk-w4qw.geojson?$limit=100"
     code_field: zoneclass
     source_crs: 26910
+    style: berkeley
   # Current-year ad-valorem tax computed from the county's assessed-value roll
   # joined to per-TRA rates. Excludes parcel taxes / special assessments.
   tax_source:
@@ -101,6 +103,17 @@ alameda:
     where: "SitusCity <> 'BERKELEY' OR SitusCity IS NULL"
     select: [APN, SitusStreetNumber, SitusStreetName, SitusCity, SitusZip]
   apn_normalizer: alameda
+  # Per-city zoning layers (verified against real Bay Area coordinates —
+  # several similarly-named out-of-state layers exist on ArcGIS Online).
+  zoning:
+    - type: arcgis
+      url: "https://gismaps.oaklandca.gov/server/rest/services/Planning_Layers/FeatureServer/6"
+      code_field: BASEZONE
+      style: oakland
+    - type: arcgis
+      url: "https://maps.hayward-ca.gov/arcgis/rest/services/OpenData/COH_Zoning/FeatureServer/0"
+      code_field: ZONING_
+      style: hayward
   tax_source:
     type: alameda_roll
     roll_url: "https://services5.arcgis.com/ROBnTHSNjoZ2Wm1P/ArcGIS/rest/services/Assessor_Office_Secured_Tax_Roll_2025_to_2026/FeatureServer/0"

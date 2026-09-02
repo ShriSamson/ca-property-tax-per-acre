@@ -72,16 +72,15 @@ function draw() {
   if (!points.length) return;
 
   // No spread here: Math.min(...arr) overflows the argument limit >~120k points.
-  let tMin = Infinity, tMax = 0, aMin = Infinity, aMax = 0;
+  let tMin = Infinity, tMax = 0;
   for (const p of points) {
     if (p[0] > 0) { if (p[0] < tMin) tMin = p[0]; if (p[0] > tMax) tMax = p[0]; }
-    if (p[1] < aMin) aMin = p[1];
-    if (p[1] > aMax) aMax = p[1];
   }
   const x0 = Math.floor(log10(Math.max(10, tMin)));
   const x1 = Math.ceil(log10(tMax));
-  const a0 = Math.floor(log10(Math.max(0.001, aMin)));
-  const a1 = Math.ceil(log10(aMax));
+  // Fixed lot-size window: 0.01 acres at the top down to 10 acres.
+  const a0 = -2;
+  const a1 = 1;
   const px = MARGIN.left, py = MARGIN.top;
   const pw = w - MARGIN.left - MARGIN.right, ph = h - MARGIN.top - MARGIN.bottom;
   view = { x0, x1, a0, a1, px, py, pw, ph };
@@ -146,11 +145,11 @@ function draw() {
   ctx.fillStyle = "#4a7ab5";
   ctx.globalAlpha = byZone ? 0.55 : 0.45;
   for (const p of points) {
-    if (p[0] <= 0) continue;
+    if (p[0] <= 0 || p[1] < 0.01 || p[1] > 10) continue;
     if (byZone) {
-      const cat = zoneCategory(p[6]);
-      if (!activeCats.has(cat)) continue;
-      ctx.fillStyle = CAT_COLOR[cat];
+      const cat = p[7] || zoneCategory(p[6]);
+      if (!activeCats.has(cat === "" ? "other" : cat)) continue;
+      ctx.fillStyle = CAT_COLOR[cat] || CAT_COLOR.other;
     }
     const x = X(p[0]), y = Y(p[1]);
     ctx.fillRect(x - 2.25, y - 2.25, 4.5, 4.5);
@@ -207,7 +206,8 @@ canvas.addEventListener("mousemove", (e) => {
   const [tax, ac, , , apn, address, zone] = p;
   const county = linkCounty();
   const vintage = county.vintage?.tax?.split(" ")[0];
-  const zoneCat = ZONE_CATEGORIES.find((c) => c.key === zoneCategory(zone));
+  const catKey = p[7] || zoneCategory(zone);
+  const zoneCat = ZONE_CATEGORIES.find((c) => c.key === catKey) || ZONE_CATEGORIES.at(-1);
   tip.innerHTML =
     `<strong>${address || "(no address)"}</strong><br>` +
     `<span class="muted">APN ${apn}</span><br>` +
