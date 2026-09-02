@@ -1,6 +1,5 @@
 // Scatter view: one dot per taxed lot. X = annual tax (log), Y = lot size
 // (log, inverted so small lots are at the top) — high tax/acre = top right.
-import { bucketColor } from "./colors.js";
 
 const MARGIN = { top: 24, right: 70, bottom: 46, left: 64 };
 
@@ -115,11 +114,11 @@ function draw() {
 
   // Points, indexed into 14px cells for hover lookup.
   grid = new Map();
+  ctx.fillStyle = "#4a7ab5";
+  ctx.globalAlpha = 0.45;
   for (const p of points) {
     if (p[0] <= 0) continue;
     const x = X(p[0]), y = Y(p[1]);
-    ctx.fillStyle = bucketColor(p[0] / p[1]);
-    ctx.globalAlpha = 0.65;
     ctx.fillRect(x - 1.4, y - 1.4, 2.8, 2.8);
     const key = ((x / 14) | 0) + ":" + ((y / 14) | 0);
     if (!grid.has(key)) grid.set(key, []);
