@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Scatter — CA Property Tax per Acre</title>
+  <link rel="stylesheet" href="../css/site.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>CA Property Tax <span>per acre</span></h1>
+    <select id="city-select"></select>
+    <nav>
+      <a href="../">Map</a>
+      <a href="../highlights/">Highlights</a>
+      <a href="../about/">About</a>
+    </nav>
+  </header>
+  <div class="scatter-wrap">
+    <canvas id="scatter"></canvas>
+    <div id="scatter-tip" class="scatter-tip"></div>
+    <div class="scatter-note muted">
+      Each dot is one taxed lot (log scales; $0 exempt lots omitted). Smaller lots plot
+      higher, bigger tax bills plot right — so high revenue per acre is top-right.
+      Diagonal lines mark constant tax/acre. Click a dot to see it on the map.
+    </div>
+  </div>
+  <script type="module" src="../js/scatter.js"></script>
+</body>
+</html>

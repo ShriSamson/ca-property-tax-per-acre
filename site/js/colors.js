@@ -43,6 +43,13 @@ export function extrusionHeightExpression() {
   ];
 }
 
+// Plain-JS bucket lookup (canvas rendering can't use MapLibre expressions).
+export function bucketColor(tpa) {
+  let color = BUCKETS[0].color;
+  for (const b of BUCKETS) if (tpa >= b.min) color = b.color;
+  return color;
+}
+
 export function buildLegend(container) {
   const rows = BUCKETS.map(
     (b) => `<div class="legend-row"><span class="swatch" style="background:${b.color}"></span>${b.label}</div>`

@@ -14,9 +14,14 @@ html, body { margin: 0; height: 100%; font-family: -apple-system, "Segoe UI", Ro
   border: 1px solid #ccc; border-radius: 6px; font-size: 14px;
 }
 .topbar input.search-miss { border-color: #d7191c; background: #fff5f5; }
-.topbar #toggle3d, .topbar #toggleSat {
+.topbar #toggle3d, .topbar #toggleSat, .topbar .topbar-btn {
   padding: 6px 14px; border: 1px solid #ccc; border-radius: 6px; background: #fff;
   font-size: 13px; font-weight: 600; cursor: pointer;
+  color: #333; text-decoration: none; white-space: nowrap;
+}
+.topbar .topbar-btn:hover { background: #f5f5f5; }
+.topbar select {
+  padding: 6px 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px;
 }
 .topbar #toggle3d.active, .topbar #toggleSat.active { background: #2171b5; color: #fff; border-color: #2171b5; }
 .topbar nav { margin-left: auto; display: flex; gap: 14px; }
@@ -115,6 +120,15 @@ html, body { margin: 0; height: 100%; font-family: -apple-system, "Segoe UI", Ro
 .sort-arrow { color: #bbb; font-size: 10px; }
 .sort-arrow.active { color: #2c7bb6; }
 .desc { font-size: 11px; margin-top: 1px; }
+
+.scatter-wrap { padding: 64px 12px 8px; }
+.scatter-tip {
+  display: none; position: fixed; z-index: 30; pointer-events: none;
+  background: rgba(255,255,255,0.97); border: 1px solid #ccc; border-radius: 6px;
+  padding: 6px 9px; font-size: 12px; line-height: 1.5;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+}
+.scatter-note { margin: 6px 4px 0 64px; font-size: 12px; max-width: 720px; }
 
 #minimap {
   display: none; position: fixed; z-index: 40;
