@@ -3,6 +3,8 @@
 Each driver takes the list of ranking entries and returns {apn: description},
 kept to ~10 words (assessor use-class names are already terse).
 """
+import time
+
 import requests
 
 
@@ -11,27 +13,39 @@ def _chunks(items, n):
         yield items[i : i + n]
 
 
+def _arcgis_query(url: str, params: dict) -> list:
+    """POST (long IN-clauses overflow GET URLs) with one retry; [] on failure."""
+    for attempt in range(2):
+        try:
+            resp = requests.post(url + "/query", data=params, timeout=120)
+            resp.raise_for_status()
+            return resp.json()["features"]
+        except (requests.RequestException, ValueError, KeyError) as e:
+            if attempt == 0:
+                time.sleep(3)
+            else:
+                print(f"  enrich query failed, skipping chunk: {e}")
+    return []
+
+
 def alameda_use_codes(ts_cfg: dict, entries: list[dict]) -> dict:
     """Use_Code per APN from the roll layer + the county's code→name table."""
     codes = {}
-    lookup_url = ts_cfg["use_codes_url"] + "/query"
-    resp = requests.get(lookup_url, params={
+    for f in _arcgis_query(ts_cfg["use_codes_url"], {
         "where": "1=1", "outFields": "Use_Code,Use_Code_Common_Name",
         "resultRecordCount": 2000, "f": "json",
-    }, timeout=120)
-    for f in resp.json()["features"]:
+    }):
         codes[str(f["attributes"]["Use_Code"]).strip()] = f["attributes"]["Use_Code_Common_Name"].strip()
 
     out = {}
     apns = [e["apn"] for e in entries]
     for chunk in _chunks(apns, 100):
         quoted = ",".join(f"'{a}'" for a in chunk)
-        resp = requests.get(ts_cfg["roll_url"] + "/query", params={
+        for f in _arcgis_query(ts_cfg["roll_url"], {
             "where": f"Print_Parcel IN ({quoted})",
             "outFields": "Print_Parcel,Use_Code",
             "returnGeometry": "false", "f": "json",
-        }, timeout=120)
-        for f in resp.json()["features"]:
+        }):
             a = f["attributes"]
             desc = codes.get(str(a["Use_Code"]).strip())
             if desc:

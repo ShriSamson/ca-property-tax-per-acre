@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ashland Highlights — CA Property Tax per Acre</title>
+  <link rel="stylesheet" href="../../vendor/maplibre-gl.css" />
+  <link rel="stylesheet" href="../../css/site.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>CA Property Tax <span>per acre</span></h1>
+    <nav>
+      <a href="../../">Map</a>
+      <a href="../../about/">About</a>
+    </nav>
+  </header>
+  <main class="page">
+    <h1>Ashland highlights</h1>
+    <p id="stats" class="muted"></p>
+    <p class="muted">Ranked by annual property tax revenue per acre of land. Click an address to
+    view the parcel on the map. RE = real estate listing, SV = Google Street View,
+    Tax = county tax record, AI = ask Google AI about the property.</p>
+    <div class="tabs">
+      <button data-tab="top" class="active">Top 100 per acre</button>
+      <button data-tab="bottom">Bottom 100 per acre</button>
+    </div>
+    <div id="rankings"></div>
+  </main>
+  <div id="minimap"></div>
+  <script src="../../vendor/maplibre-gl.js"></script>
+  <script src="../../vendor/pmtiles.js"></script>
+  <script>window.COUNTY_ID = "alameda-ashland";</script>
+  <script type="module" src="../../js/highlights.js"></script>
+</body>
+</html>

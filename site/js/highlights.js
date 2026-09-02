@@ -9,7 +9,13 @@ const [manifest, rankings] = await Promise.all([
   fetch("../../data/counties.json").then((r) => r.json()),
   fetch(`../../data/rankings/${countyId}.json`).then((r) => r.json()),
 ]);
-const county = manifest.counties.find((c) => c.id === countyId);
+// City pages (e.g. "alameda-oakland") fall back to their parent county's
+// manifest entry, used only for the mini-map. Link data lives in rankings.
+const county =
+  manifest.counties.find((c) => c.id === countyId) ||
+  manifest.counties.find((c) => countyId.startsWith(c.id + "-"));
+const linkCity = rankings.linkCity ?? county.city;
+const taxUrl = rankings.taxRecordUrl ?? county.taxRecordUrl;
 
 const SORT_KEYS = { tax: "tax", acres: "acres", tpa: "tpa" };
 let currentTab = "top";
@@ -26,10 +32,10 @@ function row(e, i) {
     <td class="num">${fmtMoney(e.tax)}</td>
     <td class="num">${e.acres.toFixed(3)}</td>
     <td class="num">${fmtMoney(e.tpa)}</td>
-    <td><a href="${realEstateUrl(e.address, county.city)}" target="_blank" rel="noopener">RE</a>
-        <a href="${streetViewUrl(e.address, county.city, e.lat, e.lng)}" target="_blank" rel="noopener">SV</a>
-        <a href="${taxRecordUrl(county.taxRecordUrl, e.apn)}" target="_blank" rel="noopener">Tax</a>
-        <a href="${aiSearchUrl(e.address, county.city)}" target="_blank" rel="noopener">AI</a></td>
+    <td><a href="${realEstateUrl(e.address, linkCity)}" target="_blank" rel="noopener">RE</a>
+        <a href="${streetViewUrl(e.address, linkCity, e.lat, e.lng)}" target="_blank" rel="noopener">SV</a>
+        <a href="${taxRecordUrl(taxUrl, e.apn)}" target="_blank" rel="noopener">Tax</a>
+        <a href="${aiSearchUrl(e.address, linkCity)}" target="_blank" rel="noopener">AI</a></td>
   </tr>`;
 }
 

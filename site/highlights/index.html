@@ -21,12 +21,16 @@
   </main>
   <script type="module">
     const manifest = await (await fetch("../data/counties.json")).json();
+    const summary = (s) =>
+      `${s.with_tax.toLocaleString()} taxed parcels · median $${Math.round(s.median_tpa).toLocaleString()}/acre`;
     document.getElementById("cities").innerHTML = manifest.counties
       .map((c) => {
-        const s = c.stats;
+        const cityLinks = (c.cities || [])
+          .map((cc) => `<li class="sub"><a href="${cc.id}/">${cc.name}</a>
+            <span class="muted">${summary(cc.stats)}</span></li>`)
+          .join("");
         return `<li><a href="${c.id}/">${c.name}</a>
-          <span class="muted">${s.with_tax.toLocaleString()} taxed parcels ·
-          median $${Math.round(s.median_tpa).toLocaleString()}/acre</span></li>`;
+          <span class="muted">${summary(c.stats)}</span></li>${cityLinks}`;
       })
       .join("");
   </script>

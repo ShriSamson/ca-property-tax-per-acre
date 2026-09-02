@@ -20,10 +20,15 @@ function parseHash() {
 const hash = parseHash();
 let start = { center: counties[0].center, zoom: counties[0].zoom };
 if (counties.length > 1) {
-  // Show all covered cities on first load.
-  const lng = counties.reduce((s, c) => s + c.center[0], 0) / counties.length;
-  const lat = counties.reduce((s, c) => s + c.center[1], 0) / counties.length;
-  start = { center: [lng, lat], zoom: 10.7 };
+  // Fit all covered areas on first load.
+  const lngs = counties.map((c) => c.center[0]);
+  const lats = counties.map((c) => c.center[1]);
+  start = {
+    bounds: [
+      [Math.min(...lngs) - 0.18, Math.min(...lats) - 0.12],
+      [Math.max(...lngs) + 0.18, Math.max(...lats) + 0.12],
+    ],
+  };
 }
 if (hash.map) {
   const [z, lat, lng] = hash.map.split("/").map(Number);

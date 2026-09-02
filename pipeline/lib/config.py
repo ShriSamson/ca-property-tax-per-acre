@@ -10,9 +10,29 @@ SITE_DIR = ROOT / "site"
 DATA_CSV = ROOT / "Data" / "ca_all.csv"
 
 
+class _NoDuplicatesLoader(yaml.SafeLoader):
+    """yaml silently keeps the last duplicate key, which can splice one
+    county's settings into another after a bad edit — fail loudly instead."""
+
+
+def _construct_mapping(loader, node, deep=False):
+    keys = set()
+    for key_node, _ in node.value:
+        key = loader.construct_object(key_node, deep=deep)
+        if key in keys:
+            raise SystemExit(f"counties.yml: duplicate key '{key}' at line {key_node.start_mark.line + 1}")
+        keys.add(key)
+    return yaml.SafeLoader.construct_mapping(loader, node, deep)
+
+
+_NoDuplicatesLoader.add_constructor(
+    yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, _construct_mapping
+)
+
+
 def load_county(county_id: str) -> dict:
     with open(PIPELINE_DIR / "counties.yml") as f:
-        counties = yaml.safe_load(f)
+        counties = yaml.load(f, Loader=_NoDuplicatesLoader)
     if county_id not in counties:
         raise SystemExit(f"Unknown county '{county_id}'. Known: {', '.join(counties)}")
     cfg = counties[county_id]
