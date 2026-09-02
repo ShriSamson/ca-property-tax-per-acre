@@ -10,6 +10,10 @@
   <header class="topbar">
     <h1>CA Property Tax <span>per acre</span></h1>
     <select id="city-select"></select>
+    <select id="color-select" title="Point coloring">
+      <option value="none">Color: uniform</option>
+      <option value="zoning">Color: zoning</option>
+    </select>
     <nav>
       <a href="../">Map</a>
       <a href="./" class="current">Scatter</a>
@@ -19,6 +23,7 @@
   </header>
   <div class="scatter-wrap">
     <canvas id="scatter"></canvas>
+    <div id="scatter-legend" class="scatter-legend"></div>
     <div id="scatter-tip" class="scatter-tip"></div>
     <div id="scatter-popup" class="scatter-popup"></div>
     <div class="scatter-note muted">

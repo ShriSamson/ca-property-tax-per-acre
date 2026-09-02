@@ -5,9 +5,35 @@ import { popupHtml } from "./popup.js";
 const MARGIN = { top: 24, right: 70, bottom: 46, left: 64 };
 
 const select = document.getElementById("city-select");
+const colorSelect = document.getElementById("color-select");
 const canvas = document.getElementById("scatter");
 const tip = document.getElementById("scatter-tip");
+const legendEl = document.getElementById("scatter-legend");
 const ctx = canvas.getContext("2d");
+
+// Zoning categories shared across cities' code systems (SF + Berkeley).
+const ZONE_CATEGORIES = [
+  { key: "sfr", label: "Residential – low density", color: "#4daf4a" },
+  { key: "mfr", label: "Residential – multi-family", color: "#377eb8" },
+  { key: "mixed", label: "Mixed-use", color: "#984ea3" },
+  { key: "com", label: "Commercial", color: "#e41a1c" },
+  { key: "ind", label: "Industrial / PDR", color: "#a65628" },
+  { key: "pub", label: "Public / green space", color: "#666666" },
+  { key: "other", label: "Other / unknown", color: "#cccccc" },
+];
+const CAT_COLOR = Object.fromEntries(ZONE_CATEGORIES.map((c) => [c.key, c.color]));
+
+function zoneCategory(code) {
+  const c = (code || "").toUpperCase();
+  if (!c) return "other";
+  if (c === "P" || c === "PUB" || c === "X" || c.startsWith("P-")) return "pub";
+  if (/^(PDR|M-1|M-2|MM|MRD|MU-LI|MULI|SALI|SLI|M$)/.test(c)) return "ind";
+  if (c.includes("MU") || c.startsWith("UMU") || c.startsWith("WMU")) return "mixed";
+  if (/^(RH-1|R-1|R1|ES-R)/.test(c)) return "sfr";
+  if (/^(RH|RM|RTO|RC|RED|RSD|R-|SI)/.test(c)) return "mfr";
+  if (/^(C|NC)/.test(c)) return "com";
+  return "other";
+}
 
 const manifest = await (await fetch("../data/counties.json")).json();
 const options = [];
@@ -115,17 +141,28 @@ function draw() {
 
   // Points, indexed into 14px cells for hover lookup.
   grid = new Map();
+  const byZone = colorSelect.value === "zoning";
   ctx.fillStyle = "#4a7ab5";
-  ctx.globalAlpha = 0.45;
+  ctx.globalAlpha = byZone ? 0.55 : 0.45;
   for (const p of points) {
     if (p[0] <= 0) continue;
     const x = X(p[0]), y = Y(p[1]);
+    if (byZone) ctx.fillStyle = CAT_COLOR[zoneCategory(p[6])];
     ctx.fillRect(x - 2.25, y - 2.25, 4.5, 4.5);
     const key = ((x / 14) | 0) + ":" + ((y / 14) | 0);
     if (!grid.has(key)) grid.set(key, []);
     grid.get(key).push([x, y, p]);
   }
   ctx.globalAlpha = 1;
+
+  legendEl.style.display = byZone ? "block" : "none";
+  if (byZone) {
+    legendEl.innerHTML =
+      `<div class="legend-title">Zoning</div>` +
+      ZONE_CATEGORIES.map(
+        (c) => `<div class="legend-row"><span class="swatch" style="background:${c.color}"></span>${c.label}</div>`
+      ).join("");
+  }
 }
 
 function fmtPow(e) {
@@ -150,11 +187,20 @@ canvas.addEventListener("mousemove", (e) => {
   if (!p) { tip.style.display = "none"; canvas.style.cursor = ""; return; }
   canvas.style.cursor = "pointer";
   tip.style.display = "block";
-  tip.style.left = e.clientX + 14 + "px";
-  tip.style.top = e.clientY + 10 + "px";
-  const [tax, ac, , , apn] = p;
-  tip.innerHTML = `APN ${apn}<br>Tax $${tax.toLocaleString()} · ${ac} ac<br>` +
-    `<strong>$${Math.round(tax / ac).toLocaleString()}/acre</strong>`;
+  tip.style.left = Math.min(e.clientX + 14, window.innerWidth - 260) + "px";
+  tip.style.top = Math.min(e.clientY + 10, window.innerHeight - 170) + "px";
+  const [tax, ac, , , apn, address, zone] = p;
+  const county = linkCounty();
+  const vintage = county.vintage?.tax?.split(" ")[0];
+  const zoneCat = ZONE_CATEGORIES.find((c) => c.key === zoneCategory(zone));
+  tip.innerHTML =
+    `<strong>${address || "(no address)"}</strong><br>` +
+    `<span class="muted">APN ${apn}</span><br>` +
+    (zone ? `Zoning: ${zone} <span class="muted">(${zoneCat.label})</span><br>` : "") +
+    `Annual tax${vintage ? ` <span class="muted">(${vintage})</span>` : ""}: $${tax.toLocaleString()}<br>` +
+    `Lot size: ${ac} acres (${Math.round(ac * 43560).toLocaleString()} sq ft)<br>` +
+    `<strong>$${Math.round(tax / ac).toLocaleString()}/acre</strong><br>` +
+    `<span class="muted">Click for links</span>`;
 });
 canvas.addEventListener("mouseleave", () => (tip.style.display = "none"));
 
@@ -173,8 +219,8 @@ canvas.addEventListener("click", (e) => {
   const r = canvas.getBoundingClientRect();
   const p = nearest(e.clientX - r.left, e.clientY - r.top);
   if (!p) { popupEl.style.display = "none"; return; }
-  const [tax, ac, lat, lng, apn, address] = p;
-  const props = { a: apn, ad: address, t: tax, ac, tpa: Math.round(tax / ac), u: 1 };
+  const [tax, ac, lat, lng, apn, address, zone] = p;
+  const props = { a: apn, ad: address, t: tax, ac, tpa: Math.round(tax / ac), u: 1, n: zone || undefined };
   popupEl.innerHTML =
     `<button class="info-close" aria-label="Close">&times;</button>` +
     popupHtml(props, linkCounty(), lat, lng) +
@@ -197,6 +243,7 @@ async function load(id) {
 }
 
 select.addEventListener("change", () => load(select.value));
+colorSelect.addEventListener("change", draw);
 window.addEventListener("resize", draw);
 
 const initial = new URLSearchParams(location.search).get("city") || "sf";
