@@ -111,11 +111,35 @@ map.on("load", () => {
       url: `pmtiles://${new URL(county.tiles, location.href).href}`,
       promoteId: "a",
     });
+    // Cheap centroid dots below z12 — full polygon tiles at low zoom are
+    // multi-MB each and dominated first-load time.
+    if (county.tilesOverview) {
+      map.addSource(`${srcId}-ov`, {
+        type: "vector",
+        url: `pmtiles://${new URL(county.tilesOverview, location.href).href}`,
+      });
+      map.addLayer({
+        id: `${srcId}-dots`,
+        type: "circle",
+        source: `${srcId}-ov`,
+        "source-layer": "overview",
+        maxzoom: 12,
+        paint: {
+          "circle-color": fillColorExpression(),
+          "circle-radius": ["interpolate", ["linear"], ["zoom"], 8, 1, 11.5, 2.6],
+          "circle-opacity": 0.75,
+        },
+      }, firstSymbol);
+      map.on("click", `${srcId}-dots`, (e) => {
+        map.easeTo({ center: e.lngLat, zoom: 13.5, duration: 600 });
+      });
+    }
     map.addLayer({
       id: `${srcId}-fill`,
       type: "fill",
       source: srcId,
       "source-layer": "parcels",
+      minzoom: county.tilesOverview ? 12 : 0,
       paint: {
         "fill-color": fillColorExpression(),
         "fill-opacity": fillOpacity(false),
@@ -146,6 +170,7 @@ map.on("load", () => {
       type: "fill-extrusion",
       source: srcId,
       "source-layer": "parcels",
+      minzoom: county.tilesOverview ? 12 : 0,
       layout: { visibility: "none" },
       paint: {
         "fill-extrusion-color": fillColorExpression(),

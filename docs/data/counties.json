@@ -4,6 +4,7 @@
       "id": "alameda",
       "name": "Alameda County",
       "tiles": "data/tiles/alameda.pmtiles",
+      "tilesOverview": "data/tiles/alameda_overview.pmtiles",
       "center": [
         -122.13,
         37.68
@@ -230,6 +231,7 @@
       "id": "berkeley",
       "name": "Berkeley",
       "tiles": "data/tiles/berkeley.pmtiles",
+      "tilesOverview": "data/tiles/berkeley_overview.pmtiles",
       "center": [
         -122.272,
         37.867
@@ -255,6 +257,7 @@
       "id": "sf",
       "name": "San Francisco",
       "tiles": "data/tiles/sf.pmtiles",
+      "tilesOverview": "data/tiles/sf_overview.pmtiles",
       "center": [
         -122.4415,
         37.762

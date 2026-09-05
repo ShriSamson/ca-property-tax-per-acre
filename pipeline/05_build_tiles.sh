@@ -17,4 +17,11 @@ tippecanoe -o "$ROOT/docs/data/tiles/$COUNTY.pmtiles" -l parcels -f -P \
   --extend-zooms-if-still-dropping \
   "$ROOT/build/$COUNTY/parcels.geojsonl"
 
-ls -lh "$ROOT/docs/data/tiles/$COUNTY.pmtiles"
+# Tiny centroid overview tileset for z8-11; polygons render from z12 up.
+tippecanoe -o "$ROOT/docs/data/tiles/${COUNTY}_overview.pmtiles" -l overview -f -P \
+  -Z8 -z11 -r1 \
+  --drop-densest-as-needed \
+  --maximum-tile-bytes=400000 \
+  "$ROOT/build/$COUNTY/parcels_points.geojsonl"
+
+ls -lh "$ROOT/docs/data/tiles/$COUNTY.pmtiles" "$ROOT/docs/data/tiles/${COUNTY}_overview.pmtiles"
