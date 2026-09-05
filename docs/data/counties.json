@@ -1,0 +1,280 @@
+{
+  "counties": [
+    {
+      "id": "alameda",
+      "name": "Alameda County",
+      "tiles": "data/tiles/alameda.pmtiles",
+      "center": [
+        -122.13,
+        37.68
+      ],
+      "zoom": 10.8,
+      "minzoom": 10,
+      "taxRecordUrl": "https://propertytax.alamedacountyca.gov/search",
+      "city": "CA",
+      "taxNote": "Ad-valorem tax for 2025\u201326; excludes parcel taxes and special assessments",
+      "vintage": {
+        "tax": "2025\u201326 ad valorem",
+        "parcels": "2026-08-03"
+      },
+      "stats": {
+        "parcels": 381624,
+        "with_tax": 380382,
+        "tax_total": 4580371740.0,
+        "median_tpa": 53719.0
+      },
+      "cities": [
+        {
+          "id": "alameda-alameda",
+          "name": "Alameda",
+          "stats": {
+            "parcels": 19194,
+            "with_tax": 19151,
+            "tax_total": 242580631.0,
+            "median_tpa": 84489.0
+          }
+        },
+        {
+          "id": "alameda-albany",
+          "name": "Albany",
+          "stats": {
+            "parcels": 4649,
+            "with_tax": 4649,
+            "tax_total": 52136137.0,
+            "median_tpa": 93320.0
+          }
+        },
+        {
+          "id": "alameda-ashland",
+          "name": "Ashland",
+          "stats": {
+            "parcels": 4026,
+            "with_tax": 4025,
+            "tax_total": 26841847.0,
+            "median_tpa": 38433.0
+          }
+        },
+        {
+          "id": "alameda-castro-valley",
+          "name": "Castro Valley",
+          "stats": {
+            "parcels": 20763,
+            "with_tax": 20749,
+            "tax_total": 170197642.0,
+            "median_tpa": 45143.0
+          }
+        },
+        {
+          "id": "alameda-cherryland",
+          "name": "Cherryland",
+          "stats": {
+            "parcels": 2407,
+            "with_tax": 2407,
+            "tax_total": 17291876.0,
+            "median_tpa": 28377.0
+          }
+        },
+        {
+          "id": "alameda-dublin",
+          "name": "Dublin",
+          "stats": {
+            "parcels": 17196,
+            "with_tax": 16787,
+            "tax_total": 295706754.0,
+            "median_tpa": 102122.0
+          }
+        },
+        {
+          "id": "alameda-emeryville",
+          "name": "Emeryville",
+          "stats": {
+            "parcels": 1129,
+            "with_tax": 1127,
+            "tax_total": 81385353.0,
+            "median_tpa": 70072.0
+          }
+        },
+        {
+          "id": "alameda-fairview",
+          "name": "Fairview",
+          "stats": {
+            "parcels": 3737,
+            "with_tax": 3734,
+            "tax_total": 25923758.0,
+            "median_tpa": 32609.0
+          }
+        },
+        {
+          "id": "alameda-fremont",
+          "name": "Fremont",
+          "stats": {
+            "parcels": 56502,
+            "with_tax": 56466,
+            "tax_total": 851269461.0,
+            "median_tpa": 62987.0
+          }
+        },
+        {
+          "id": "alameda-hayward",
+          "name": "Hayward",
+          "stats": {
+            "parcels": 34282,
+            "with_tax": 34247,
+            "tax_total": 355503029.0,
+            "median_tpa": 43641.0
+          }
+        },
+        {
+          "id": "alameda-hayward-acres",
+          "name": "Hayward Acres",
+          "stats": {
+            "parcels": 382,
+            "with_tax": 382,
+            "tax_total": 4059964.0,
+            "median_tpa": 30771.0
+          }
+        },
+        {
+          "id": "alameda-livermore",
+          "name": "Livermore",
+          "stats": {
+            "parcels": 30194,
+            "with_tax": 29933,
+            "tax_total": 311327564.0,
+            "median_tpa": 43805.0
+          }
+        },
+        {
+          "id": "alameda-newark",
+          "name": "Newark",
+          "stats": {
+            "parcels": 13824,
+            "with_tax": 13822,
+            "tax_total": 167521710.0,
+            "median_tpa": 53239.0
+          }
+        },
+        {
+          "id": "alameda-oakland",
+          "name": "Oakland",
+          "stats": {
+            "parcels": 98343,
+            "with_tax": 98251,
+            "tax_total": 1079218301.0,
+            "median_tpa": 50939.0
+          }
+        },
+        {
+          "id": "alameda-piedmont",
+          "name": "Piedmont",
+          "stats": {
+            "parcels": 3988,
+            "with_tax": 3986,
+            "tax_total": 75225854.0,
+            "median_tpa": 98962.0
+          }
+        },
+        {
+          "id": "alameda-pleasanton",
+          "name": "Pleasanton",
+          "stats": {
+            "parcels": 23087,
+            "with_tax": 23044,
+            "tax_total": 373510625.0,
+            "median_tpa": 65307.0
+          }
+        },
+        {
+          "id": "alameda-san-leandro",
+          "name": "San Leandro",
+          "stats": {
+            "parcels": 23013,
+            "with_tax": 23006,
+            "tax_total": 222364729.0,
+            "median_tpa": 43988.0
+          }
+        },
+        {
+          "id": "alameda-san-lorenzo",
+          "name": "San Lorenzo",
+          "stats": {
+            "parcels": 7275,
+            "with_tax": 7275,
+            "tax_total": 43774425.0,
+            "median_tpa": 40878.0
+          }
+        },
+        {
+          "id": "alameda-sunol",
+          "name": "Sunol",
+          "stats": {
+            "parcels": 804,
+            "with_tax": 800,
+            "tax_total": 6011793.0,
+            "median_tpa": 2597.0
+          }
+        },
+        {
+          "id": "alameda-union-city",
+          "name": "Union City",
+          "stats": {
+            "parcels": 16280,
+            "with_tax": 16272,
+            "tax_total": 177417130.0,
+            "median_tpa": 58226.0
+          }
+        }
+      ]
+    },
+    {
+      "id": "berkeley",
+      "name": "Berkeley",
+      "tiles": "data/tiles/berkeley.pmtiles",
+      "center": [
+        -122.272,
+        37.867
+      ],
+      "zoom": 13,
+      "minzoom": 10,
+      "taxRecordUrl": "https://propertytax.alamedacountyca.gov/search",
+      "city": "Berkeley, CA",
+      "taxNote": "Ad-valorem tax for 2025\u201326; excludes parcel taxes and special assessments",
+      "vintage": {
+        "tax": "2025\u201326 ad valorem",
+        "parcels": "2026-08-03"
+      },
+      "stats": {
+        "parcels": 26107,
+        "with_tax": 26075,
+        "tax_total": 358742661.0,
+        "median_tpa": 73056.0
+      },
+      "cities": []
+    },
+    {
+      "id": "sf",
+      "name": "San Francisco",
+      "tiles": "data/tiles/sf.pmtiles",
+      "center": [
+        -122.4415,
+        37.762
+      ],
+      "zoom": 12.2,
+      "minzoom": 10,
+      "taxRecordUrl": "https://sanfrancisco-ca.county-taxes.com/public/search?search_query={apn}&category=gsgx_property_tax",
+      "city": "San Francisco, CA",
+      "taxNote": null,
+      "vintage": {
+        "tax": "2020\u201321 roll",
+        "parcels": "2026-08-31"
+      },
+      "stats": {
+        "parcels": 155011,
+        "with_tax": 149647,
+        "tax_total": 3456322761.0,
+        "median_tpa": 128448.0
+      },
+      "cities": []
+    }
+  ]
+}

@@ -1,6 +1,8 @@
 .venv/
 .DS_Store
-Data/
-build/
+# Root-anchored: on macOS git matches ignore patterns case-insensitively,
+# so a bare "Data/" would also swallow docs/data/.
+/Data/
+/build/
 __pycache__/
 *.pyc

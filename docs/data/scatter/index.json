@@ -1,0 +1,73 @@
+{
+ "pages": {
+  "alameda": {
+   "zoning": false
+  },
+  "alameda-alameda": {
+   "zoning": false
+  },
+  "alameda-albany": {
+   "zoning": false
+  },
+  "alameda-ashland": {
+   "zoning": false
+  },
+  "alameda-castro-valley": {
+   "zoning": false
+  },
+  "alameda-cherryland": {
+   "zoning": false
+  },
+  "alameda-dublin": {
+   "zoning": false
+  },
+  "alameda-emeryville": {
+   "zoning": true
+  },
+  "alameda-fairview": {
+   "zoning": false
+  },
+  "alameda-fremont": {
+   "zoning": false
+  },
+  "alameda-hayward": {
+   "zoning": true
+  },
+  "alameda-hayward-acres": {
+   "zoning": false
+  },
+  "alameda-livermore": {
+   "zoning": false
+  },
+  "alameda-newark": {
+   "zoning": false
+  },
+  "alameda-oakland": {
+   "zoning": true
+  },
+  "alameda-piedmont": {
+   "zoning": false
+  },
+  "alameda-pleasanton": {
+   "zoning": false
+  },
+  "alameda-san-leandro": {
+   "zoning": false
+  },
+  "alameda-san-lorenzo": {
+   "zoning": false
+  },
+  "alameda-sunol": {
+   "zoning": false
+  },
+  "alameda-union-city": {
+   "zoning": false
+  },
+  "berkeley": {
+   "zoning": true
+  },
+  "sf": {
+   "zoning": true
+  }
+ }
+}
