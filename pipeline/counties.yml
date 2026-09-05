@@ -114,6 +114,10 @@ alameda:
       url: "https://maps.hayward-ca.gov/arcgis/rest/services/OpenData/COH_Zoning/FeatureServer/0"
       code_field: ZONING_
       style: hayward
+    - type: arcgis
+      url: "https://services3.arcgis.com/ljOdqLVbHpS7dOJQ/arcgis/rest/services/Zoning_View/FeatureServer/0"
+      code_field: ZoningCode
+      style: emeryville
   tax_source:
     type: alameda_roll
     roll_url: "https://services5.arcgis.com/ROBnTHSNjoZ2Wm1P/ArcGIS/rest/services/Assessor_Office_Secured_Tax_Roll_2025_to_2026/FeatureServer/0"

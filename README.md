@@ -14,10 +14,10 @@ Data/ca_all.csv (tax roll, per-APN)  ┐
                                      ├─ pipeline/ (Python) ─ join on APN, aggregate condos,
 County GIS parcel polygons (Socrata) ┘                       compute acres (EPSG:3310), tax/acre
                                           │
-                                          ├─ tippecanoe → site/data/tiles/<county>.pmtiles
-                                          ├─ site/data/rankings/<county>.json (top/bottom 100)
-                                          └─ site/highlights/<county>/index.html
-site/ = fully static → MapLibre GL + PMTiles, no server required
+                                          ├─ tippecanoe → docs/data/tiles/<county>.pmtiles
+                                          ├─ docs/data/rankings/<county>.json (top/bottom 100)
+                                          └─ docs/highlights/<county>/index.html
+docs/ = fully static → MapLibre GL + PMTiles, no server required
 ```
 
 ## Setup
@@ -44,8 +44,27 @@ Optional: set `SOCRATA_APP_TOKEN` to raise Socrata rate limits.
 PMTiles needs HTTP Range support, which `python -m http.server` lacks:
 
 ```bash
-npx serve site
+npx serve docs
 ```
+
+## Attribution & licenses
+
+- **Code**: [AGPL-3.0](LICENSE). This project is inspired by and structured after
+  [typpo/ca-property-tax](https://github.com/typpo/ca-property-tax) (AGPL-3.0) by
+  Ian Webster, which pioneered the scraped statewide dataset and map.
+- **Scraped tax data** (San Francisco 2020–21 amounts): from the
+  [California Property Taxes 2020 dataset](https://www.kaggle.com/datasets/iwebst/california-property-taxes-2020)
+  by Ian Webster on Kaggle, licensed **CC BY-NC-SA 4.0**. Derived artifacts built
+  from it (SF tiles, rankings, scatter data) carry the same license: attribution
+  required, non-commercial use only, share-alike.
+- **County-sourced data**: parcel boundaries, assessed-value rolls, tax rates, and
+  zoning districts come from DataSF, the City of Berkeley, Alameda County, and the
+  cities of Oakland, Hayward, and Emeryville — public records via their open data
+  portals.
+- **Basemap**: [OpenFreeMap](https://openfreemap.org) tiles ©
+  [OpenMapTiles](https://openmaptiles.org), data ©
+  [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors.
+  Satellite imagery © Esri, Maxar, Earthstar Geographics.
 
 ## Adding a county
 
@@ -55,5 +74,5 @@ npx serve site
    to the GIS join field's format.
 3. If the county doesn't publish via Socrata, add a driver to `pipeline/lib/sources.py`
    (most CA counties use ArcGIS FeatureServer).
-4. `./run_county.sh <county>` — the frontend picks it up from `site/data/counties.json`
+4. `./run_county.sh <county>` — the frontend picks it up from `docs/data/counties.json`
    with no code changes.

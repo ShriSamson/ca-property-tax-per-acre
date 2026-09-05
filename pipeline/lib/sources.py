@@ -73,6 +73,9 @@ def download_arcgis(geom_cfg: dict) -> gpd.GeoDataFrame:
         "orderByFields": geom_cfg.get("order_by", "OBJECTID"),
     }
 
+    # Stop only on an empty page and advance by rows actually returned:
+    # servers clamp page sizes below the requested count (Hayward caps at
+    # 1000), which a shorter-page stop condition mistakes for the end.
     pages = []
     offset = 0
     while True:
@@ -83,9 +86,7 @@ def download_arcgis(geom_cfg: dict) -> gpd.GeoDataFrame:
         if len(page) == 0:
             break
         pages.append(page)
-        if len(page) < page_size:
-            break
-        offset += page_size
+        offset += len(page)
 
     return gpd.GeoDataFrame(pd.concat(pages, ignore_index=True), crs=pages[0].crs)
 

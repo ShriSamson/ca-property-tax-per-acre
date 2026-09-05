@@ -36,14 +36,20 @@ function zoneCategory(code) {
   return "other";
 }
 
-const manifest = await (await fetch("../data/counties.json")).json();
+const [manifest, scatterIdx] = await Promise.all([
+  fetch("../data/counties.json").then((r) => r.json()),
+  fetch("../data/scatter/index.json").then((r) => (r.ok ? r.json() : { pages: {} })),
+]);
+const hasZoning = (id) => scatterIdx.pages?.[id]?.zoning;
 const options = [];
 for (const c of manifest.counties) {
   options.push({ id: c.id, name: c.name + (c.cities?.length ? " (entire county)" : "") });
   for (const city of c.cities || []) options.push({ id: city.id, name: city.name });
 }
 options.sort((a, b) => a.name.localeCompare(b.name));
-select.innerHTML = options.map((o) => `<option value="${o.id}">${o.name}</option>`).join("");
+select.innerHTML = options
+  .map((o) => `<option value="${o.id}">${o.name}${hasZoning(o.id) ? " (z)" : ""}</option>`)
+  .join("");
 
 let points = [];
 let view = null; // {x0, x1, a0, a1, w, h} log-space extents + pixel size

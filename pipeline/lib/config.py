@@ -6,7 +6,8 @@ import yaml
 PIPELINE_DIR = Path(__file__).resolve().parent.parent
 ROOT = PIPELINE_DIR.parent
 BUILD_DIR = ROOT / "build"
-SITE_DIR = ROOT / "site"
+# Named docs/ so GitHub Pages can serve it straight from the main branch.
+SITE_DIR = ROOT / "docs"
 DATA_CSV = ROOT / "Data" / "ca_all.csv"
 
 

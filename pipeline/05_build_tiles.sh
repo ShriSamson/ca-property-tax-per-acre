@@ -5,10 +5,10 @@ COUNTY="${1:?usage: 05_build_tiles.sh <county>}"
 DIR="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(dirname "$DIR")"
 
-mkdir -p "$ROOT/site/data/tiles"
+mkdir -p "$ROOT/docs/data/tiles"
 # Generous tile budget: the default 500KB forces low-zoom tiles to drop most
 # small parcels, leaving only big (usually exempt) ones — misleading colors.
-tippecanoe -o "$ROOT/site/data/tiles/$COUNTY.pmtiles" -l parcels -f -P \
+tippecanoe -o "$ROOT/docs/data/tiles/$COUNTY.pmtiles" -l parcels -f -P \
   -Z10 -z15 \
   --maximum-tile-bytes=2500000 \
   --detect-shared-borders \
@@ -17,4 +17,4 @@ tippecanoe -o "$ROOT/site/data/tiles/$COUNTY.pmtiles" -l parcels -f -P \
   --extend-zooms-if-still-dropping \
   "$ROOT/build/$COUNTY/parcels.geojsonl"
 
-ls -lh "$ROOT/site/data/tiles/$COUNTY.pmtiles"
+ls -lh "$ROOT/docs/data/tiles/$COUNTY.pmtiles"

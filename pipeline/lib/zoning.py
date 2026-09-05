@@ -58,12 +58,27 @@ def _hayward(c: str) -> str:
     return "other"
 
 
+def _emeryville(c: str) -> str:
+    if c.startswith(("RM", "RH")):
+        return "mfr"  # Emeryville has no single-family zoning at all
+    if c.startswith("MU"):
+        return "mixed"
+    if c.startswith("OT"):
+        return "com"
+    if c.startswith("IN"):
+        return "ind"
+    if c in ("P", "PO", "UT", "SM", "M"):
+        return "pub"
+    return "other"
+
+
 STYLES = {
     "generic": _generic,
     "sf": _generic,
     "berkeley": _generic,
     "oakland": _oakland,
     "hayward": _hayward,
+    "emeryville": _emeryville,
 }
 
 

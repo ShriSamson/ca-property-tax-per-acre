@@ -84,7 +84,15 @@ def dump(page_id: str, name: str, parcels):
     (out_dir / f"{page_id}.json").write_text(
         json.dumps({"name": name, "points": pts}, separators=(",", ":"))
     )
-    print(f"scatter {page_id}: {len(pts)} points")
+    zoned = sum(1 for p in pts if p[7])
+    has_zoning = len(pts) > 0 and zoned / len(pts) >= 0.5
+    print(f"scatter {page_id}: {len(pts)} points ({zoned} zoned)")
+
+    # Upsert the per-page zoning-availability index used by the dropdown.
+    idx_path = out_dir / "index.json"
+    idx = json.loads(idx_path.read_text()) if idx_path.exists() else {"pages": {}}
+    idx["pages"][page_id] = {"zoning": has_zoning}
+    idx_path.write_text(json.dumps(idx, indent=1, sort_keys=True))
 
 
 def main():
