@@ -47,6 +47,12 @@ const map = new maplibregl.Map({
 // and tilt freely (MapLibre default), like Google Maps.
 map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), "top-right");
 
+// A wide bounds-fit can land below the parcel tiles' minzoom (empty map);
+// nudge in so parcels are visible on first load.
+map.once("load", () => {
+  if (!hash.map && map.getZoom() < 10.1) map.setZoom(10.1);
+});
+
 class PitchControl {
   onAdd(map) {
     const div = document.createElement("div");
