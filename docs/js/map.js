@@ -44,6 +44,8 @@ const map = new maplibregl.Map({
   minZoom: 10,
   maxZoom: 20,
   maxPitch: 85,
+  // 3D revenue bars are the default view.
+  pitch: 55,
 });
 // visualizePitch makes the compass tilt with the camera; dragging it rotates,
 // clicking it resets bearing and pitch. Ctrl+drag / right-click-drag rotate
@@ -113,6 +115,7 @@ map.on("load", () => {
       type: "fill",
       source: srcId,
       "source-layer": "parcels",
+      layout: { visibility: "none" },
       paint: {
         "fill-color": fillColorExpression(),
         "fill-opacity": fillOpacity(false),
@@ -124,6 +127,7 @@ map.on("load", () => {
       source: srcId,
       "source-layer": "parcels",
       minzoom: 14,
+      layout: { visibility: "none" },
       paint: {
         "line-color": [
           "case",
@@ -143,7 +147,6 @@ map.on("load", () => {
       type: "fill-extrusion",
       source: srcId,
       "source-layer": "parcels",
-      layout: { visibility: "none" },
       paint: {
         "fill-extrusion-color": fillColorExpression(),
         "fill-extrusion-height": extrusionHeightExpression(),
@@ -192,7 +195,9 @@ map.on("load", () => {
   });
 
   const btn3d = document.getElementById("toggle3d");
-  let is3d = false;
+  let is3d = true;
+  btn3d.classList.add("active");
+  document.getElementById("hint3d").style.display = "block";
   btn3d.addEventListener("click", () => {
     is3d = !is3d;
     btn3d.classList.toggle("active", is3d);
