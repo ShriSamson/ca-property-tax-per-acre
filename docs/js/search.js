@@ -1,7 +1,7 @@
 // Minimal address search against Nominatim (search-on-enter, 1 req/s policy).
 let lastRequest = 0;
 
-export function initSearch(map, input) {
+export function initSearch(map, input, onLocate) {
   input.addEventListener("keydown", async (e) => {
     if (e.key !== "Enter" || !input.value.trim()) return;
     const now = Date.now();
@@ -24,6 +24,9 @@ export function initSearch(map, input) {
       }
       const [lng, lat] = feat.geometry.coordinates;
       map.flyTo({ center: [lng, lat], zoom: 17 });
+      // Once tiles at the destination have rendered, pop open the parcel
+      // under the pin so the user doesn't have to find and click it.
+      if (onLocate) map.once("idle", () => onLocate([lng, lat]));
     } catch (err) {
       console.warn("geocode failed", err);
     }

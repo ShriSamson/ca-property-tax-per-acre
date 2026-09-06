@@ -240,6 +240,33 @@ map.on("load", () => {
   }
 });
 
+// Open the popup for whatever parcel sits at this location — used by search
+// so a found address doesn't leave the user hunting for the right lot.
+// Geocoders often pin the street centerline, so fall back to a small box.
+function openParcelPopupAt(lngLat) {
+  const pt = map.project(lngLat);
+  const queries = [
+    pt,
+    [[pt.x - 12, pt.y - 12], [pt.x + 12, pt.y + 12]],
+  ];
+  for (const county of counties) {
+    const srcId = `parcels-${county.id}`;
+    const layers = [`${srcId}-fill`, `${srcId}-3d`].filter((l) => map.getLayer(l));
+    for (const q of queries) {
+      const f = map.queryRenderedFeatures(q, { layers })[0];
+      if (f) {
+        selectParcel(srcId, f.id);
+        new maplibregl.Popup({ maxWidth: "320px" })
+          .setLngLat(lngLat)
+          .setHTML(popupHtml(f.properties, county, lngLat[1].toFixed(6), lngLat[0].toFixed(6)))
+          .addTo(map);
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 let selected = null;
 function selectParcel(srcId, id) {
   if (selected)
@@ -266,7 +293,7 @@ map.on("moveend", () => {
 });
 
 buildLegend(document.getElementById("legend"));
-initSearch(map, document.getElementById("search"));
+initSearch(map, document.getElementById("search"), openParcelPopupAt);
 
 // Coverage footer line with per-city tax vintages.
 const totalTaxed = counties.reduce((s, c) => s + c.stats.with_tax, 0);

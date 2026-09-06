@@ -174,7 +174,8 @@ html, body { margin: 0; height: 100%; font-family: -apple-system, "Segoe UI", Ro
   .legend { width: 196px; padding: 8px 10px; bottom: 20px; }
   .legend-row { font-size: 10px; }
   .data-note { display: none; }
-  .hint3d { top: auto; bottom: 44px; font-size: 11px; max-width: 94vw; }
+  /* No room for the rotate/tilt instructions on phones (and no Ctrl+drag). */
+  .hint3d { display: none !important; }
   .page { padding-top: 100px; }
   .scatter-wrap { padding-top: 96px; }
   #scatter-legend { top: 96px; }
