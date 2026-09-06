@@ -154,3 +154,31 @@ html, body { margin: 0; height: 100%; font-family: -apple-system, "Segoe UI", Ro
   box-shadow: 0 4px 20px rgba(0,0,0,0.3);
   overflow: hidden; pointer-events: none;
 }
+
+.topbar h1 .home-link { color: inherit; text-decoration: none; }
+.topbar h1 .home-link span { color: #d7191c; }
+.topbar h1 .home-link:hover { opacity: 0.75; }
+
+/* Mobile: the single-row topbar overflows and hides controls; wrap into
+   two rows (title+nav, then search+toggles) and push content down. */
+@media (max-width: 720px) {
+  .topbar { flex-wrap: wrap; height: auto; padding: 6px 10px; row-gap: 6px; column-gap: 8px; }
+  .topbar h1 { font-size: 15px; order: 0; }
+  .topbar nav { order: 1; margin-left: auto; gap: 10px; }
+  .topbar nav a { font-size: 13px; }
+  .topbar input { order: 2; flex: 1 1 50%; max-width: none; min-width: 0; font-size: 13px; padding: 6px 8px; }
+  .topbar #toggle3d { order: 3; padding: 6px 10px; font-size: 12px; }
+  .topbar #toggleSat { order: 4; padding: 6px 10px; font-size: 12px; }
+  .topbar select { order: 2; min-width: 0; flex: 1 1 40%; font-size: 13px; }
+  #map { top: 88px; }
+  .legend { width: 196px; padding: 8px 10px; bottom: 20px; }
+  .legend-row { font-size: 10px; }
+  .data-note { display: none; }
+  .hint3d { top: auto; bottom: 44px; font-size: 11px; max-width: 94vw; }
+  .page { padding-top: 100px; }
+  .scatter-wrap { padding-top: 96px; }
+  #scatter-legend { top: 96px; }
+  .rank-table th { top: 88px; }
+  #rankings { overflow-x: auto; }
+  #minimap { display: none !important; }
+}
