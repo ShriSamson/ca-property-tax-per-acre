@@ -1,8 +1,9 @@
 // Single source of truth for the tax-per-acre color scale.
 export const NO_DATA_COLOR = "#d4d4d0";
-// Muted rose: viridis owns purple at its low end, so exempt needs a hue
-// outside the ramp — but soft enough that big exempt parcels don't shout.
-export const ZERO_TAX_COLOR = "#d8a3b5";
+// Beige a shade darker than NO_DATA_COLOR: viridis owns purple at its low
+// end, so exempt needs a hue outside the ramp — but muted enough that big
+// exempt parcels don't shout.
+export const ZERO_TAX_COLOR = "#c9bda2";
 
 // matplotlib viridis sampled at 10 evenly spaced points:
 // dark purple (low tax/acre) → teal → green → yellow (high).
