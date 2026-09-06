@@ -1,22 +1,22 @@
 // Single source of truth for the tax-per-acre color scale.
-// 10 discrete buckets of increasing darkness (single-hue blues) so
-// neighborhood-level differences read boldly at a glance.
 export const NO_DATA_COLOR = "#d4d4d0";
-export const ZERO_TAX_COLOR = "#9b8ec4";
+// Muted rose: viridis owns purple at its low end, so exempt needs a hue
+// outside the ramp — but soft enough that big exempt parcels don't shout.
+export const ZERO_TAX_COLOR = "#d8a3b5";
 
-// Two clean families with no muddy transition: the bottom five buckets run
-// light → dark blue, the top five jump to light → saturated golden yellow.
+// matplotlib viridis sampled at 10 evenly spaced points:
+// dark purple (low tax/acre) → teal → green → yellow (high).
 export const BUCKETS = [
-  { min: 0,         color: "#e3f2fb", label: "< $10k" },
-  { min: 10_000,    color: "#b8d9f0", label: "$10k – 25k" },
-  { min: 25_000,    color: "#8bbfe3", label: "$25k – 50k" },
-  { min: 50_000,    color: "#5a9fd2", label: "$50k – 100k" },
-  { min: 100_000,   color: "#2b7bba", label: "$100k – 200k" },
-  { min: 200_000,   color: "#fff3c4", label: "$200k – 400k" },
-  { min: 400_000,   color: "#ffe58f", label: "$400k – 800k" },
-  { min: 800_000,   color: "#ffd545", label: "$800k – 1.6M" },
-  { min: 1_600_000, color: "#ffc107", label: "$1.6M – 3M" },
-  { min: 3_000_000, color: "#f59f00", label: "$3M+" },
+  { min: 0,         color: "#440154", label: "< $10k" },
+  { min: 10_000,    color: "#482878", label: "$10k – 25k" },
+  { min: 25_000,    color: "#3e4989", label: "$25k – 50k" },
+  { min: 50_000,    color: "#31688e", label: "$50k – 100k" },
+  { min: 100_000,   color: "#26828e", label: "$100k – 200k" },
+  { min: 200_000,   color: "#1f9e89", label: "$200k – 400k" },
+  { min: 400_000,   color: "#35b779", label: "$400k – 800k" },
+  { min: 800_000,   color: "#6ece58", label: "$800k – 1.6M" },
+  { min: 1_600_000, color: "#b5de2b", label: "$1.6M – 3M" },
+  { min: 3_000_000, color: "#fde725", label: "$3M+" },
 ];
 
 // MapLibre paint expression: gray for no data, tan for $0 (exempt),
