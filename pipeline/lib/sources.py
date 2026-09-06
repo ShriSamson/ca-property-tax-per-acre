@@ -80,8 +80,19 @@ def download_arcgis(geom_cfg: dict) -> gpd.GeoDataFrame:
     offset = 0
     while True:
         params = dict(params_base, resultOffset=offset)
-        resp = _get_with_retry(url, params, {})
-        page = gpd.read_file(resp.text)
+        # Servers sometimes truncate a response mid-stream (HTTP 200 but
+        # unparseable GeoJSON) — retry the whole fetch+parse, not just HTTP.
+        for attempt in range(MAX_RETRIES):
+            resp = _get_with_retry(url, params, {})
+            try:
+                page = gpd.read_file(resp.text)
+                break
+            except Exception as e:
+                if attempt == MAX_RETRIES - 1:
+                    raise
+                wait = 2 ** attempt * 5
+                print(f"  bad page at offset {offset} ({e}), retrying in {wait}s...")
+                time.sleep(wait)
         print(f"  fetched {len(page)} rows at offset {offset}")
         if len(page) == 0:
             break

@@ -18,9 +18,17 @@ def normalize_alameda(apn: str) -> str:
     return apn.strip().upper()
 
 
+def normalize_digits(apn: str) -> str:
+    # San Mateo (9-digit) and Santa Clara (8-digit) APNs are undashed digit
+    # strings with leading zeros in both the tax CSV and the county GIS layers.
+    return apn.strip().upper()
+
+
 NORMALIZERS = {
     "sf": normalize_sf,
     "alameda": normalize_alameda,
+    "san_mateo": normalize_digits,
+    "santa_clara": normalize_digits,
 }
 
 

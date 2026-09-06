@@ -4,6 +4,7 @@ footprints, compute acreage (EPSG:3310) and tax per acre.
 Usage: python 03_join_and_metrics.py --county sf
 """
 import argparse
+import re
 
 import geopandas as gpd
 import numpy as np
@@ -35,6 +36,29 @@ def main():
 
     geom[join_field] = geom[join_field].astype(str).str.strip().str.upper()
     geom = geom[geom.geometry.notna() & ~geom.geometry.is_empty].copy()
+
+    # Some layers (Santa Clara) only carry a single full situs string like
+    # "225 W SANTA CLARA ST SAN JOSE CA 95113"; split it into street address
+    # and city by matching a configured city list against the tail.
+    situs_parse = gcfg.get("situs_parse")
+    if situs_parse:
+        cities = sorted((c.upper() for c in situs_parse["cities"]), key=len, reverse=True)
+
+        def parse_situs(v):
+            if v is None or str(v) == "nan":
+                return "", None
+            s = str(v).strip().upper()
+            s = re.sub(r"\s+CA(\s+\d{5}(-\d{4})?)?$", "", s)
+            for c in cities:
+                if s == c:
+                    return "", c
+                if s.endswith(" " + c):
+                    return s[: -len(c) - 1].strip(), c
+            return s, None
+
+        parsed = geom[situs_parse["field"]].map(parse_situs)
+        geom["_situs_addr"] = [p[0] for p in parsed]
+        geom["_situs_city"] = [p[1] for p in parsed]
     # A handful of parcels appear twice in some sources; keep one geometry each.
     geom = geom.drop_duplicates(subset=[join_field])
     qa.add("geometry_rows", len(geom))
@@ -67,6 +91,7 @@ def main():
         return " ".join(str(p) for p in parts if p and str(p) != "nan").strip()
 
     neighborhood_map = cfg.get("neighborhood_map")
+    append_city = bool(cfg.get("append_city_to_address"))
 
     def neighborhood_of(row):
         if not neighborhood_field:
@@ -97,12 +122,20 @@ def main():
             apn = taxed.iloc[0]["apn"] if len(taxed) else g.iloc[0][join_field]
         if len(taxed):
             address = taxed.iloc[0]["address"]
+            # The scrape CSV marks some situses "UNKNOWN"; prefer the GIS situs.
+            if not address or address.upper() in ("UNKNOWN", "NAN", "NONE"):
+                address = street_address(g.iloc[0])
         else:
             address = street_address(g.iloc[0])
+        neighborhood = neighborhood_of(g.iloc[0])
+        # Multi-city counties embed the city so real-estate/streetview links
+        # resolve (the county-level `city` config is just "CA" for these).
+        if append_city and address and neighborhood and neighborhood.upper() not in address.upper():
+            address = f"{address} {neighborhood.upper()}"
         groups.append({
             "apn": apn,
             "address": address,
-            "neighborhood": neighborhood_of(g.iloc[0]),
+            "neighborhood": neighborhood,
             "tax_total": float(taxed["tax"].sum()) if len(taxed) else None,
             "units": int(len(taxed)),
             "geometry": geometry,

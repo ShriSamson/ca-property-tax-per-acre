@@ -87,6 +87,61 @@ berkeley:
   zoom: 13
   minzoom: 10
 
+sanmateo:
+  name: San Mateo County
+  csv_code: SM
+  city_pages: true
+  append_city_to_address: true
+  geometry:
+    type: arcgis
+    # County-run ArcGIS server (ISD). The old maps.smcgov.org host is dead.
+    url: "https://gis.smcgov.org/maps/rest/services/Common/ACTIVE_PARCELS_APN/FeatureServer/0"
+    join_field: APN
+    footprint_strategy: geometry
+    address_fields: [SITUS_NO1, SITUS_STREET, SITUS_TYPE]
+    neighborhood_field: SITUS_CITY
+    select: [APN, SITUS_NO1, SITUS_STREET, SITUS_TYPE, SITUS_CITY, PUCDESC]
+  apn_normalizer: san_mateo
+  description_source: arcgis_field
+  description_field: PUCDESC
+  vintage_tax: "2020–21 roll"
+  tax_record_url: "https://sanmateo-ca.county-taxes.com/public/search?search_query={apn}&category=gsgx_property_tax"
+  city: "CA"
+  center: [-122.33, 37.56]
+  zoom: 10.8
+  minzoom: 10
+
+santaclara:
+  name: Santa Clara County
+  csv_code: SC
+  city_pages: true
+  append_city_to_address: true
+  geometry:
+    type: arcgis
+    # SCC Planning Office's official AGO org; weekly-updated public layer.
+    url: "https://services2.arcgis.com/tcv2cMrq63AgvbHF/arcgis/rest/services/Parcels_Public_View/FeatureServer/0"
+    join_field: APN
+    order_by: OBJECTID_1
+    footprint_strategy: geometry
+    # No situs-city field; city is embedded in the full situs string.
+    situs_parse:
+      field: Situs_Address_Full
+      cities: [SAN JOSE, SANTA CLARA, SUNNYVALE, MOUNTAIN VIEW, PALO ALTO,
+               CUPERTINO, MILPITAS, CAMPBELL, LOS GATOS, SARATOGA,
+               LOS ALTOS HILLS, LOS ALTOS, MONTE SERENO, MORGAN HILL, GILROY,
+               SAN MARTIN, STANFORD, ALVISO, COYOTE, REDWOOD ESTATES,
+               MOUNT HAMILTON, NEW ALMADEN, HOLY CITY]
+    address_fields: [_situs_addr]
+    neighborhood_field: _situs_city
+    select: [APN, Situs_Address_Full]
+  apn_normalizer: santa_clara
+  vintage_tax: "2020–21 roll"
+  tax_record_url: "https://payments.sccgov.org/propertytax/Secured/Parcel?parcelnumber={apn}&partial=true"
+  city: "CA"
+  center: [-121.90, 37.30]
+  zoom: 10.2
+  minzoom: 10
+
 alameda:
   name: Alameda County
   csv_code: AL

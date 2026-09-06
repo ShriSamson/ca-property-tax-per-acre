@@ -86,10 +86,34 @@ def sf_roll(cfg: dict, entries: list[dict]) -> dict:
     return out
 
 
+def arcgis_field(cfg: dict, entries: list[dict]) -> dict:
+    """Use-class text straight off a field of the county's parcel layer
+    (e.g. San Mateo's PUCDESC), fetched per-APN for the ranked entries."""
+    g = cfg["geometry"]
+    field = cfg["description_field"]
+    out = {}
+    for chunk in _chunks([e["apn"] for e in entries], 100):
+        quoted = ",".join(f"'{a}'" for a in chunk)
+        for f in _arcgis_query(g["url"], {
+            "where": f"{g['join_field']} IN ({quoted})",
+            "outFields": f"{g['join_field']},{field}",
+            "returnGeometry": "false", "f": "json",
+        }):
+            a = f["attributes"]
+            desc = (a.get(field) or "").strip()
+            if desc:
+                if desc.isupper():
+                    desc = desc.title()
+                out[str(a[g["join_field"]]).strip().upper()] = desc
+    return out
+
+
 def describe(cfg: dict, entries: list[dict]) -> dict:
     source = cfg.get("description_source")
     if source == "alameda_use_codes":
         return alameda_use_codes(cfg["tax_source"], entries)
     if source == "sf_roll":
         return sf_roll(cfg, entries)
+    if source == "arcgis_field":
+        return arcgis_field(cfg, entries)
     return {}
