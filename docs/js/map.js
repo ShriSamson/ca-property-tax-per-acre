@@ -35,6 +35,11 @@ if (hash.map) {
   if ([z, lat, lng].every(Number.isFinite)) start = { center: [lng, lat], zoom: z };
 }
 
+// 3D revenue bars are the default view; turning them off persists across
+// page navigation (localStorage can throw in some private-browsing modes).
+let is3d = true;
+try { is3d = localStorage.getItem("map3d") !== "0"; } catch {}
+
 const map = new maplibregl.Map({
   container: "map",
   style: "https://tiles.openfreemap.org/styles/positron",
@@ -44,8 +49,7 @@ const map = new maplibregl.Map({
   minZoom: 10,
   maxZoom: 20,
   maxPitch: 85,
-  // 3D revenue bars are the default view.
-  pitch: 55,
+  pitch: is3d ? 55 : 0,
 });
 // visualizePitch makes the compass tilt with the camera; dragging it rotates,
 // clicking it resets bearing and pitch. Ctrl+drag / right-click-drag rotate
@@ -115,7 +119,7 @@ map.on("load", () => {
       type: "fill",
       source: srcId,
       "source-layer": "parcels",
-      layout: { visibility: "none" },
+      layout: { visibility: is3d ? "none" : "visible" },
       paint: {
         "fill-color": fillColorExpression(),
         "fill-opacity": fillOpacity(false),
@@ -127,7 +131,7 @@ map.on("load", () => {
       source: srcId,
       "source-layer": "parcels",
       minzoom: 14,
-      layout: { visibility: "none" },
+      layout: { visibility: is3d ? "none" : "visible" },
       paint: {
         "line-color": [
           "case",
@@ -147,6 +151,7 @@ map.on("load", () => {
       type: "fill-extrusion",
       source: srcId,
       "source-layer": "parcels",
+      layout: { visibility: is3d ? "visible" : "none" },
       paint: {
         "fill-extrusion-color": fillColorExpression(),
         "fill-extrusion-height": extrusionHeightExpression(),
@@ -195,11 +200,11 @@ map.on("load", () => {
   });
 
   const btn3d = document.getElementById("toggle3d");
-  let is3d = true;
-  btn3d.classList.add("active");
-  document.getElementById("hint3d").style.display = "block";
+  btn3d.classList.toggle("active", is3d);
+  document.getElementById("hint3d").style.display = is3d ? "block" : "none";
   btn3d.addEventListener("click", () => {
     is3d = !is3d;
+    try { localStorage.setItem("map3d", is3d ? "1" : "0"); } catch {}
     btn3d.classList.toggle("active", is3d);
     for (const county of counties) {
       const srcId = `parcels-${county.id}`;
