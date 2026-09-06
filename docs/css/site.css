@@ -41,10 +41,6 @@ html, body { margin: 0; height: 100%; font-family: -apple-system, "Segoe UI", Ro
 .legend-row { display: flex; align-items: center; gap: 6px; color: #555; margin-top: 3px; font-size: 11px; white-space: nowrap; }
 .swatch { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
 
-.data-note {
-  position: absolute; bottom: 6px; left: 12px; z-index: 5;
-  font-size: 11px; color: #777;
-}
 
 .hint3d {
   display: none;
@@ -171,9 +167,11 @@ html, body { margin: 0; height: 100%; font-family: -apple-system, "Segoe UI", Ro
   .topbar #toggleSat { order: 4; padding: 6px 10px; font-size: 12px; }
   .topbar select { order: 2; min-width: 0; flex: 1 1 40%; font-size: 13px; }
   #map { top: 88px; }
-  .legend { width: 196px; padding: 8px 10px; bottom: 20px; }
+  /* Full-width bottom bar: the buckets flow into as many columns as fit,
+     instead of a squarish box with dead space to its right. */
+  .legend { left: 8px; right: 8px; bottom: 8px; width: auto; padding: 8px 10px; }
+  .legend-grid { grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); }
   .legend-row { font-size: 10px; }
-  .data-note { display: none; }
   /* No room for the rotate/tilt instructions on phones (and no Ctrl+drag). */
   .hint3d { display: none !important; }
   .page { padding-top: 100px; }

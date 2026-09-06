@@ -52,12 +52,17 @@ export function bucketColor(tpa) {
 }
 
 export function buildLegend(container) {
-  const rows = BUCKETS.map(
-    (b) => `<div class="legend-row"><span class="swatch" style="background:${b.color}"></span>${b.label}</div>`
+  // Exempt and no-data live inside the grid so every entry flows into the
+  // same columns (the mobile legend is a wide multi-column bar).
+  const entries = [
+    ...BUCKETS.map((b) => [b.color, b.label]),
+    [ZERO_TAX_COLOR, "$0 (exempt)"],
+    [NO_DATA_COLOR, "No tax data"],
+  ];
+  const rows = entries.map(
+    ([color, label]) => `<div class="legend-row"><span class="swatch" style="background:${color}"></span>${label}</div>`
   ).join("");
   container.innerHTML = `
     <div class="legend-title">Tax revenue per acre</div>
-    <div class="legend-grid">${rows}</div>
-    <div class="legend-row"><span class="swatch" style="background:${ZERO_TAX_COLOR}"></span>$0 (exempt)</div>
-    <div class="legend-row"><span class="swatch" style="background:${NO_DATA_COLOR}"></span>No tax data</div>`;
+    <div class="legend-grid">${rows}</div>`;
 }

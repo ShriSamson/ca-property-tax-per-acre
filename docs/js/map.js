@@ -294,9 +294,3 @@ map.on("moveend", () => {
 
 buildLegend(document.getElementById("legend"));
 initSearch(map, document.getElementById("search"), openParcelPopupAt);
-
-// Coverage footer line with per-city tax vintages.
-const totalTaxed = counties.reduce((s, c) => s + c.stats.with_tax, 0);
-document.getElementById("data-note").textContent =
-  `${counties.map((c) => `${c.name} (${c.vintage.tax})`).join(" · ")} — ` +
-  `${totalTaxed.toLocaleString()} taxed parcels`;
