@@ -67,8 +67,11 @@ serving `docs/` on main). Covers San Francisco, Berkeley, and Alameda County.
   light yellow → amber above. Single source of truth: `docs/js/colors.js`
   (legend, map fills, 3D bars, scatter all derive from it).
 - 3D bar height is purely linear: 120m per $1M/acre.
-- Overview performance: centroid-dot tilesets render below z12; polygon
-  tiles from z12 up. Keep this split when touching map layers.
+- Map minZoom is clamped to 10 (parcel tiles bottom out there; z10 fits the
+  whole covered area on one screen). Full polygons/3D bars render at every
+  zoom — a centroid-dot overview layer was tried and deliberately removed
+  (user prefers heavy first load over bars turning into dots when zooming
+  out, especially on mobile).
 
 ## Licensing
 

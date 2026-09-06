@@ -39,6 +39,9 @@ const map = new maplibregl.Map({
   container: "map",
   style: "https://tiles.openfreemap.org/styles/positron",
   ...start,
+  // Parcel tiles bottom out at z10, which already fits the whole covered
+  // area on one screen — clamp there so parcels/3D bars never vanish.
+  minZoom: 10,
   maxZoom: 20,
   maxPitch: 85,
 });
@@ -46,12 +49,6 @@ const map = new maplibregl.Map({
 // clicking it resets bearing and pitch. Ctrl+drag / right-click-drag rotate
 // and tilt freely (MapLibre default), like Google Maps.
 map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), "top-right");
-
-// A wide bounds-fit can land below the parcel tiles' minzoom (empty map);
-// nudge in so parcels are visible on first load.
-map.once("load", () => {
-  if (!hash.map && map.getZoom() < 10.1) map.setZoom(10.1);
-});
 
 class PitchControl {
   onAdd(map) {
@@ -111,35 +108,11 @@ map.on("load", () => {
       url: `pmtiles://${new URL(county.tiles, location.href).href}`,
       promoteId: "a",
     });
-    // Cheap centroid dots below z12 — full polygon tiles at low zoom are
-    // multi-MB each and dominated first-load time.
-    if (county.tilesOverview) {
-      map.addSource(`${srcId}-ov`, {
-        type: "vector",
-        url: `pmtiles://${new URL(county.tilesOverview, location.href).href}`,
-      });
-      map.addLayer({
-        id: `${srcId}-dots`,
-        type: "circle",
-        source: `${srcId}-ov`,
-        "source-layer": "overview",
-        maxzoom: 12,
-        paint: {
-          "circle-color": fillColorExpression(),
-          "circle-radius": ["interpolate", ["linear"], ["zoom"], 8, 1, 11.5, 2.6],
-          "circle-opacity": 0.75,
-        },
-      }, firstSymbol);
-      map.on("click", `${srcId}-dots`, (e) => {
-        map.easeTo({ center: e.lngLat, zoom: 13.5, duration: 600 });
-      });
-    }
     map.addLayer({
       id: `${srcId}-fill`,
       type: "fill",
       source: srcId,
       "source-layer": "parcels",
-      minzoom: county.tilesOverview ? 12 : 0,
       paint: {
         "fill-color": fillColorExpression(),
         "fill-opacity": fillOpacity(false),
@@ -170,7 +143,6 @@ map.on("load", () => {
       type: "fill-extrusion",
       source: srcId,
       "source-layer": "parcels",
-      minzoom: county.tilesOverview ? 12 : 0,
       layout: { visibility: "none" },
       paint: {
         "fill-extrusion-color": fillColorExpression(),

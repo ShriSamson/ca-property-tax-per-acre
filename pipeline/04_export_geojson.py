@@ -23,23 +23,6 @@ def main():
     bdir = config.build_dir(args.county)
     parcels = gpd.read_parquet(bdir / "parcels.parquet")
     out = bdir / "parcels.geojsonl"
-    out_pts = bdir / "parcels_points.geojsonl"
-
-    # Lightweight centroid layer for low zooms: full polygon tiles at z10-11
-    # run to multiple MB per tile, which dominates first-load time.
-    rp = parcels.geometry.representative_point()
-    with open(out_pts, "w") as fpts:
-        for row, x, y in zip(parcels.itertuples(), rp.x, rp.y):
-            props = {}
-            if row.tax_total is not None and row.tax_total == row.tax_total:
-                props["t"] = round(row.tax_total, 2)
-                props["tpa"] = round(row.tax_per_acre, 1)
-            fpts.write(json.dumps({
-                "type": "Feature",
-                "geometry": {"type": "Point", "coordinates": [round(x, 6), round(y, 6)]},
-                "properties": props,
-            }, separators=(",", ":")) + "\n")
-
     n = 0
     with open(out, "w") as f:
         for row in parcels.itertuples():
@@ -61,7 +44,7 @@ def main():
                 "properties": props,
             }, separators=(",", ":")) + "\n")
             n += 1
-    print(f"Wrote {n} features to {out} (+ centroids to {out_pts.name})")
+    print(f"Wrote {n} features to {out}")
 
 
 if __name__ == "__main__":

@@ -107,7 +107,6 @@ def main():
         "id": args.county,
         "name": cfg["name"],
         "tiles": f"data/tiles/{args.county}.pmtiles",
-        "tilesOverview": f"data/tiles/{args.county}_overview.pmtiles",
         "center": cfg["center"],
         "zoom": cfg["zoom"],
         "minzoom": cfg["minzoom"],
