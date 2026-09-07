@@ -122,8 +122,10 @@ def main():
             apn = taxed.iloc[0]["apn"] if len(taxed) else g.iloc[0][join_field]
         if len(taxed):
             address = taxed.iloc[0]["address"]
-            # The scrape CSV marks some situses "UNKNOWN"; prefer the GIS situs.
-            if not address or address.upper() in ("UNKNOWN", "NAN", "NONE"):
+            # The scrape CSV marks some situses "UNKNOWN" (or leaves NaN);
+            # prefer the GIS situs for those.
+            if not isinstance(address, str) or not address or \
+                    address.upper() in ("UNKNOWN", "NAN", "NONE"):
                 address = street_address(g.iloc[0])
         else:
             address = street_address(g.iloc[0])

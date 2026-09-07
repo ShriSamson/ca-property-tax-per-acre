@@ -2,7 +2,8 @@
 
 Static web app mapping California property tax revenue per acre per parcel.
 Live at https://shrisamson.github.io/ca-property-tax-per-acre/ (GitHub Pages
-serving `docs/` on main). Covers San Francisco, Berkeley, and Alameda County.
+serving `docs/` on main). Covers San Francisco, San Mateo, Santa Clara, and
+Alameda counties (Berkeley is its own entry).
 
 ## Architecture
 
@@ -35,6 +36,11 @@ serving `docs/` on main). Covers San Francisco, Berkeley, and Alameda County.
 - ArcGIS paging: advance offset by rows RETURNED and stop only on an empty
   page — servers clamp page sizes (Hayward caps at 1000) and a short page is
   NOT the end. Both truncation and row-skipping happened.
+- NEVER pass a GeoJSON payload to `gpd.read_file()` as a Python string: GDAL's
+  in-memory string reader fails deterministically on large pages (~1.4MB,
+  "JSON parsing error") and `BytesIO` hits a different pyogrio bug. Write to a
+  temp file (`sources._read_geojson_bytes`). Identical bytes parse fine from a
+  path.
 - ArcGIS Online is full of impostor layers with plausible names from other
   states (an "Arizona zoning_districts", a Florida "Zoning"). ALWAYS
   bounds-check downloaded geometry against California (step 08 asserts this).
@@ -50,19 +56,23 @@ serving `docs/` on main). Covers San Francisco, Berkeley, and Alameda County.
   NAD83/UTM 10N (EPSG:26910).
 - `Math.min(...arr)` overflows the JS argument limit above ~120k elements —
   the scatter plot uses loops.
-- GitHub Pages: 100MB/file hard cap. `alameda.pmtiles` is 94.8MB — the next
-  large county must move tiles to Cloudflare R2 (manifest URLs make this a
-  config change).
+- GitHub Pages: 100MiB/file hard cap. `alameda.pmtiles` is 94.8MB;
+  `santaclara.pmtiles` needed `max_tile_bytes: 2000000` in counties.yml (a
+  per-county tippecanoe budget knob in 05) to squeeze under. Anything bigger
+  must move tiles to Cloudflare R2 (manifest URLs make this a config change).
+- Santa Clara's county layer has no situs-city field — city is parsed out of
+  `Situs_Address_Full` via the `situs_parse` city list in counties.yml.
 - counties.yml: duplicate YAML keys are rejected by a strict loader in
   `lib/config.py` (a duplicate-key splice once sent one county's config into
   another).
 
 ## Data semantics
 
-- Tax vintages differ by county and are labeled everywhere: SF = 2020–21
-  scraped bills (includes parcel taxes); Berkeley/Alameda = 2025–26
-  ad-valorem computed from assessed value × TRA rate (EXCLUDES parcel
-  taxes/special assessments — popups carry a note + ⓘ explainer).
+- Tax vintages differ by county and are labeled everywhere: SF, San Mateo,
+  and Santa Clara = 2020–21 scraped bills (includes parcel taxes);
+  Berkeley/Alameda = 2025–26 ad-valorem computed from assessed value × TRA
+  rate (EXCLUDES parcel taxes/special assessments — popups carry a note + ⓘ
+  explainer).
 - Colors: 10 discrete buckets, light blue → dark blue below $200k/acre,
   light yellow → amber above. Single source of truth: `docs/js/colors.js`
   (legend, map fills, 3D bars, scatter all derive from it).

@@ -1,10 +1,24 @@
 """Geometry source drivers: Socrata (SODA GeoJSON) and ArcGIS FeatureServer."""
 import os
+import tempfile
 import time
 
 import geopandas as gpd
 import pandas as pd
 import requests
+
+
+def _read_geojson_bytes(content: bytes) -> gpd.GeoDataFrame:
+    """Parse GeoJSON via a temp file. Passing the payload as a Python string
+    makes GDAL's in-memory reader fail on large pages (a deterministic
+    'JSON parsing error' around the 1.4MB mark); the file path never does."""
+    with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as f:
+        f.write(content)
+        path = f.name
+    try:
+        return gpd.read_file(path)
+    finally:
+        os.unlink(path)
 
 PAGE_SIZE = 50_000
 MAX_RETRIES = 5
@@ -47,7 +61,7 @@ def download_socrata(geom_cfg: dict) -> gpd.GeoDataFrame:
     while True:
         params = dict(params_base, **{"$offset": offset})
         resp = _get_with_retry(url, params, headers)
-        page = gpd.read_file(resp.text)
+        page = _read_geojson_bytes(resp.content)
         print(f"  fetched {len(page)} rows at offset {offset}")
         if len(page) == 0:
             break
@@ -85,7 +99,7 @@ def download_arcgis(geom_cfg: dict) -> gpd.GeoDataFrame:
         for attempt in range(MAX_RETRIES):
             resp = _get_with_retry(url, params, {})
             try:
-                page = gpd.read_file(resp.text)
+                page = _read_geojson_bytes(resp.content)
                 break
             except Exception as e:
                 if attempt == MAX_RETRIES - 1:

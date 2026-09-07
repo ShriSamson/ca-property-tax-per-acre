@@ -135,6 +135,9 @@ santaclara:
     neighborhood_field: _situs_city
     select: [APN, Situs_Address_Full]
   apn_normalizer: santa_clara
+  # 2.5MB tiles put the tileset 1.6% over GitHub Pages' 100MiB file cap, and
+  # 2MB left only 0.3% headroom — this buys ~3% margin for future rebuilds.
+  max_tile_bytes: 1800000
   vintage_tax: "2020–21 roll"
   tax_record_url: "https://payments.sccgov.org/propertytax/Secured/Parcel?parcelnumber={apn}&partial=true"
   city: "CA"

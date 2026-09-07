@@ -8,9 +8,12 @@ ROOT="$(dirname "$DIR")"
 mkdir -p "$ROOT/docs/data/tiles"
 # Generous tile budget: the default 500KB forces low-zoom tiles to drop most
 # small parcels, leaving only big (usually exempt) ones — misleading colors.
+# Counties whose tileset would breach GitHub Pages' 100MiB file cap can set
+# max_tile_bytes in counties.yml (Santa Clara needs it).
+MAXB=$("$ROOT/.venv/bin/python" -c "from lib import config; print(config.load_county('$COUNTY').get('max_tile_bytes', 2500000))")
 tippecanoe -o "$ROOT/docs/data/tiles/$COUNTY.pmtiles" -l parcels -f -P \
   -Z10 -z15 \
-  --maximum-tile-bytes=2500000 \
+  --maximum-tile-bytes="$MAXB" \
   --detect-shared-borders \
   --coalesce-smallest-as-needed \
   --simplification=8 --simplify-only-low-zooms \
