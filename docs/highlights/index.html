@@ -25,7 +25,18 @@
     const manifest = await (await fetch("../data/counties.json")).json();
     const summary = (s) =>
       `${s.with_tax.toLocaleString()} taxed parcels · median $${Math.round(s.median_tpa).toLocaleString()}/acre`;
-    document.getElementById("cities").innerHTML = manifest.counties
+    // Berkeley is its own dataset (different tax vintage) but reads as an
+    // Alameda County city — list it among them, not as a separate county.
+    let counties = manifest.counties;
+    const berkeley = counties.find((c) => c.id === "berkeley");
+    const alameda = counties.find((c) => c.id === "alameda");
+    if (berkeley && alameda) {
+      counties = counties.filter((c) => c.id !== "berkeley");
+      alameda.cities = [...(alameda.cities || []),
+        { id: "berkeley", name: "Berkeley", stats: berkeley.stats }]
+        .sort((a, b) => a.name.localeCompare(b.name));
+    }
+    document.getElementById("cities").innerHTML = counties
       .map((c) => {
         const cityLinks = (c.cities || [])
           .map((cc) => `<li class="sub"><a href="${cc.id}/">${cc.name}</a>
