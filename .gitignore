@@ -4,5 +4,6 @@
 # so a bare "Data/" would also swallow docs/data/.
 /Data/
 /build/
+/slides/
 __pycache__/
 *.pyc
