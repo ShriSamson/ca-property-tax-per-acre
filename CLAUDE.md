@@ -2,8 +2,10 @@
 
 Static web app mapping California property tax revenue per acre per parcel.
 Live at https://shrisamson.github.io/ca-property-tax-per-acre/ (GitHub Pages
-serving `docs/` on main). Covers San Francisco, San Mateo, Santa Clara, and
-Alameda counties (Berkeley is its own entry).
+serving `docs/` on main). Live coverage: San Francisco, Berkeley, Alameda
+County. San Mateo + Santa Clara are fully built but UNPUBLISHED (user paused
+the rollout) — their docs/ artifacts sit uncommitted; do not commit them
+until asked.
 
 ## Architecture
 
