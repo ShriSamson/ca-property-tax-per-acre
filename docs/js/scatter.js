@@ -10,7 +10,6 @@ const MARGIN = { top: 24, right: 70, bottom: 46, left: 64 };
 const select = document.getElementById("city-select");
 const colorSelect = document.getElementById("color-select");
 const canvas = document.getElementById("scatter");
-const tip = document.getElementById("scatter-tip");
 const legendEl = document.getElementById("scatter-legend");
 const ctx = canvas.getContext("2d");
 
@@ -278,29 +277,8 @@ function nearest(mx, my) {
   return best;
 }
 
-canvas.addEventListener("mousemove", (e) => {
-  const r = canvas.getBoundingClientRect();
-  const p = nearest(e.clientX - r.left, e.clientY - r.top);
-  if (!p) { tip.style.display = "none"; canvas.style.cursor = ""; return; }
-  canvas.style.cursor = "pointer";
-  tip.style.display = "block";
-  tip.style.left = Math.min(e.clientX + 14, window.innerWidth - 260) + "px";
-  tip.style.top = Math.min(e.clientY + 10, window.innerHeight - 170) + "px";
-  const [tax, ac, , , apn, address, zone] = p;
-  const county = linkCounty();
-  const vintage = county.vintage?.tax?.split(" ")[0];
-  const catKey = p[7] || zoneCategory(zone);
-  const zoneCat = ZONE_CATEGORIES.find((c) => c.key === catKey) || ZONE_CATEGORIES.at(-1);
-  tip.innerHTML =
-    `<strong>${address || "(no address)"}</strong><br>` +
-    `<span class="muted">APN ${apn}</span><br>` +
-    (zone ? `Zoning: ${zone} <span class="muted">(${zoneCat.label})</span><br>` : "") +
-    `Annual tax${vintage ? ` <span class="muted">(${vintage})</span>` : ""}: $${tax.toLocaleString()}<br>` +
-    `Lot size: ${ac} acres (${Math.round(ac * 43560).toLocaleString()} sq ft)<br>` +
-    `<strong>$${Math.round(tax / ac).toLocaleString()}/acre</strong><br>` +
-    `<span class="muted">Click for links</span>`;
-});
-canvas.addEventListener("mouseleave", () => (tip.style.display = "none"));
+// No hover tooltip: with dots replaced by distribution ovals, surfacing an
+// invisible "nearest parcel" on mere hover read as noise.
 
 // Click popup — same content and links as the map view, plus "View on map".
 const popupEl = document.getElementById("scatter-popup");
@@ -326,14 +304,12 @@ canvas.addEventListener("click", (e) => {
   popupEl.style.display = "block";
   popupEl.style.left = Math.min(e.clientX + 16, window.innerWidth - 340) + "px";
   popupEl.style.top = Math.min(e.clientY + 8, window.innerHeight - 260) + "px";
-  tip.style.display = "none";
 });
 popupEl.addEventListener("click", (e) => {
   if (e.target.closest(".info-close")) popupEl.style.display = "none";
 });
 
 async function load(id) {
-  tip.style.display = "none";
   popupEl.style.display = "none";
   const data = await (await fetch(`../data/scatter/${id}.json`)).json();
   points = data.points;
