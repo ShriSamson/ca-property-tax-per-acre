@@ -1,5 +1,8 @@
-// Scatter view: one dot per taxed lot. X = annual tax (log), Y = lot size
-// (log, inverted so small lots are at the top) — high tax/acre = top right.
+// Scatter view: a translucent density cloud per zoning category (not
+// individual dots). X = annual tax (log), Y = lot size (log, inverted so
+// small lots are at the top) — high tax/acre = top right. Each category is
+// binned, blurred, and normalized to its own peak, so opacity shows where
+// that zone type's distribution sits regardless of how many parcels it has.
 import { popupHtml } from "./popup.js";
 
 const MARGIN = { top: 24, right: 70, bottom: 46, left: 64 };
@@ -22,7 +25,10 @@ const ZONE_CATEGORIES = [
   { key: "other", label: "Other / unknown", color: "#cccccc" },
 ];
 const CAT_COLOR = Object.fromEntries(ZONE_CATEGORIES.map((c) => [c.key, c.color]));
-const activeCats = new Set(ZONE_CATEGORIES.map((c) => c.key));
+// pub/other are sparse scatter that muddies the density clouds — default off.
+const activeCats = new Set(
+  ZONE_CATEGORIES.map((c) => c.key).filter((k) => k !== "pub" && k !== "other")
+);
 
 function zoneCategory(code) {
   const c = (code || "").toUpperCase();
@@ -145,35 +151,136 @@ function draw() {
   }
   ctx.setLineDash([]);
 
-  // Points, indexed into 14px cells for hover lookup.
+  // Density clouds instead of dots. Points are still indexed into 14px
+  // cells so hover/click keep resolving to the nearest actual parcel.
   grid = new Map();
-  const byZone = colorSelect.value === "zoning";
-  ctx.fillStyle = "#4a7ab5";
-  ctx.globalAlpha = byZone ? 0.55 : 0.45;
+  let byZone = colorSelect.value === "zoning";
+  // Cities with no zoning data would land every lot in the default-off
+  // "other" bucket and render nothing — fall back to one neutral cloud.
+  if (byZone) {
+    let zoned = 0, n = 0;
+    for (const p of points) if (p[0] > 0) { n++; if (p[7] || p[6]) zoned++; }
+    if (!n || zoned / n < 0.2) byZone = false;
+  }
+  const layers = new Map(); // category -> [[x, y], ...]
   for (const p of points) {
     if (p[0] <= 0 || p[1] < 0.01 || p[1] > 10) continue;
+    let cat = "all";
     if (byZone) {
-      const cat = p[7] || zoneCategory(p[6]);
-      if (!activeCats.has(cat === "" ? "other" : cat)) continue;
-      ctx.fillStyle = CAT_COLOR[cat] || CAT_COLOR.other;
+      cat = p[7] || zoneCategory(p[6]);
+      if (cat === "") cat = "other";
+      if (!activeCats.has(cat)) continue;
     }
     const x = X(p[0]), y = Y(p[1]);
-    ctx.fillRect(x - 2.25, y - 2.25, 4.5, 4.5);
+    if (!layers.has(cat)) layers.set(cat, []);
+    layers.get(cat).push([x, y]);
     const key = ((x / 14) | 0) + ":" + ((y / 14) | 0);
     if (!grid.has(key)) grid.set(key, []);
     grid.get(key).push([x, y, p]);
   }
-  ctx.globalAlpha = 1;
+  // Listed order: big residential clouds first, rarer categories composited
+  // on top so they stay visible.
+  const order = byZone
+    ? ZONE_CATEGORIES.map((c) => c.key).filter((k) => layers.has(k))
+    : [...layers.keys()];
+  for (const cat of order)
+    drawDensity(layers.get(cat), byZone ? CAT_COLOR[cat] || CAT_COLOR.other : "#4a7ab5");
 
   legendEl.style.display = byZone ? "block" : "none";
   if (byZone) {
     legendEl.innerHTML =
-      `<div class="legend-title">Zoning <span class="muted">(click to toggle)</span></div>` +
+      `<div class="legend-title">Zoning density <span class="muted">(click to toggle)</span></div>` +
       ZONE_CATEGORIES.map(
         (c) => `<div class="legend-row legend-toggle${activeCats.has(c.key) ? "" : " off"}" data-cat="${c.key}">
           <span class="swatch" style="background:${c.color}"></span>${c.label}</div>`
       ).join("");
   }
+}
+
+// --- Density rendering: bin → box-blur (≈Gaussian) → normalize → tint. ---
+const CELL = 3; // density grid resolution in CSS px
+
+function boxBlur(d, cw, ch, r) {
+  const tmp = new Float32Array(d.length);
+  for (let j = 0; j < ch; j++) {
+    const off = j * cw;
+    let acc = 0;
+    for (let i = 0; i <= Math.min(r, cw - 1); i++) acc += d[off + i];
+    for (let i = 0; i < cw; i++) {
+      tmp[off + i] = acc;
+      if (i + r + 1 < cw) acc += d[off + i + r + 1];
+      if (i - r >= 0) acc -= d[off + i - r];
+    }
+  }
+  for (let i = 0; i < cw; i++) {
+    let acc = 0;
+    for (let j = 0; j <= Math.min(r, ch - 1); j++) acc += tmp[j * cw + i];
+    for (let j = 0; j < ch; j++) {
+      d[j * cw + i] = acc;
+      if (j + r + 1 < ch) acc += tmp[(j + r + 1) * cw + i];
+      if (j - r >= 0) acc -= tmp[(j - r) * cw + i];
+    }
+  }
+}
+
+function drawDensity(pts, color) {
+  if (!pts?.length || !view) return;
+  const { px, py, pw, ph } = view;
+  const cw = Math.max(1, Math.ceil(pw / CELL));
+  const ch = Math.max(1, Math.ceil(ph / CELL));
+  const d = new Float32Array(cw * ch);
+  for (const [x, y] of pts) {
+    const i = Math.min(cw - 1, Math.max(0, ((x - px) / CELL) | 0));
+    const j = Math.min(ch - 1, Math.max(0, ((y - py) / CELL) | 0));
+    d[j * cw + i]++;
+  }
+  // Triple box blur ≈ Gaussian, σ ≈ 12px: smooth enough that each mass
+  // band forms a few large contours instead of confetti islands.
+  boxBlur(d, cw, ch, 4);
+  boxBlur(d, cw, ch, 4);
+  boxBlur(d, cw, ch, 4);
+  // Opacity encodes probability mass, not raw density: find the density
+  // levels enclosing the top 50% and 90% of this category's parcels
+  // (highest-density-region bands). Scale-free, so a 70k-lot category and a
+  // 300-lot category both read as coherent 50/90% regions.
+  let total = 0;
+  for (let k = 0; k < d.length; k++) total += d[k];
+  if (!total) return;
+  const sorted = Float64Array.from(d).sort().reverse();
+  let acc = 0, t50 = 0, t90 = 0;
+  for (const v of sorted) {
+    acc += v;
+    if (!t50 && acc >= total * 0.5) t50 = v;
+    if (acc >= total * 0.9) { t90 = v; break; }
+  }
+  const r = parseInt(color.slice(1, 3), 16);
+  const g = parseInt(color.slice(3, 5), 16);
+  const b = parseInt(color.slice(5, 7), 16);
+  const img = new ImageData(cw, ch);
+  for (let k = 0; k < d.length; k++) {
+    const v = d[k];
+    if (!v) continue;
+    // Contour-style: strong ring at the 50%-mass boundary, lighter ring at
+    // 90%, faint fills between — overlapping categories stay tellable apart.
+    // Interior fills stay near-transparent so four overlapping categories
+    // don't composite into mud; the rings carry the hue.
+    let a;
+    if (v >= t50 * 1.25) a = 0.14;
+    else if (v >= t50) a = 0.72;
+    else if (v >= t90 * 1.2) a = 0.07;
+    else if (v >= t90) a = 0.42;
+    else a = 0.04 * (v / (t90 || 1)) ** 0.7;
+    img.data[k * 4] = r;
+    img.data[k * 4 + 1] = g;
+    img.data[k * 4 + 2] = b;
+    img.data[k * 4 + 3] = Math.round(255 * a);
+  }
+  const off = document.createElement("canvas");
+  off.width = cw;
+  off.height = ch;
+  off.getContext("2d").putImageData(img, 0, 0);
+  ctx.imageSmoothingEnabled = true;
+  ctx.drawImage(off, px, py, pw, ph);
 }
 
 legendEl.addEventListener("click", (e) => {
