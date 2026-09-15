@@ -1,8 +1,8 @@
-// Scatter view: a translucent density cloud per zoning category (not
+// Scatter view: two nested covariance ovals per zoning category (not
 // individual dots). X = annual tax (log), Y = lot size (log, inverted so
-// small lots are at the top) — high tax/acre = top right. Each category is
-// binned, blurred, and normalized to its own peak, so opacity shows where
-// that zone type's distribution sits regardless of how many parcels it has.
+// small lots are at the top) — high tax/acre = top right. The inner oval
+// encloses the central 50% of a category's lots, the outer 90%, so each
+// zone type reads as a clean distribution regardless of parcel count.
 import { popupHtml } from "./popup.js";
 
 const MARGIN = { top: 24, right: 70, bottom: 46, left: 64 };
@@ -178,13 +178,21 @@ function draw() {
     if (!grid.has(key)) grid.set(key, []);
     grid.get(key).push([x, y, p]);
   }
-  // Listed order: big residential clouds first, rarer categories composited
-  // on top so they stay visible.
-  const order = byZone
-    ? ZONE_CATEGORIES.map((c) => c.key).filter((k) => layers.has(k))
-    : [...layers.keys()];
-  for (const cat of order)
-    drawDensity(layers.get(cat), byZone ? CAT_COLOR[cat] || CAT_COLOR.other : "#4a7ab5");
+  // Fit every category's ellipse first, then paint big ovals before small
+  // ones — tight distributions (e.g. SF single-family) end up on top
+  // instead of buried. Clip so wide ovals stop at the axes.
+  const fits = [];
+  for (const [cat, pts] of layers) {
+    const f = fitOval(pts);
+    if (f) fits.push({ ...f, color: byZone ? CAT_COLOR[cat] || CAT_COLOR.other : "#4a7ab5" });
+  }
+  fits.sort((a, b) => b.area - a.area);
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(px, py, pw, ph);
+  ctx.clip();
+  for (const f of fits) paintOval(f);
+  ctx.restore();
 
   legendEl.style.display = byZone ? "block" : "none";
   if (byZone) {
@@ -197,90 +205,52 @@ function draw() {
   }
 }
 
-// --- Density rendering: bin → box-blur (≈Gaussian) → normalize → tint. ---
-const CELL = 3; // density grid resolution in CSS px
-
-function boxBlur(d, cw, ch, r) {
-  const tmp = new Float32Array(d.length);
-  for (let j = 0; j < ch; j++) {
-    const off = j * cw;
-    let acc = 0;
-    for (let i = 0; i <= Math.min(r, cw - 1); i++) acc += d[off + i];
-    for (let i = 0; i < cw; i++) {
-      tmp[off + i] = acc;
-      if (i + r + 1 < cw) acc += d[off + i + r + 1];
-      if (i - r >= 0) acc -= d[off + i - r];
-    }
+// --- Oval rendering: fit a covariance ellipse to the category's points
+// (in pixel space, which is affine in log tax × log acres), then fill the
+// empirical 50% and 90% regions as flat translucent ovals. Radii come from
+// Mahalanobis-distance percentiles, so exactly half the category's lots
+// fall inside the inner oval and 90% inside the outer — no Gaussian
+// assumption, robust to outliers, coherent at any category size. ---
+function fitOval(pts) {
+  const n = pts?.length || 0;
+  if (n < 5) return null;
+  let mx = 0, my = 0;
+  for (const [x, y] of pts) { mx += x; my += y; }
+  mx /= n; my /= n;
+  let sxx = 0, syy = 0, sxy = 0;
+  for (const [x, y] of pts) {
+    const dx = x - mx, dy = y - my;
+    sxx += dx * dx; syy += dy * dy; sxy += dx * dy;
   }
-  for (let i = 0; i < cw; i++) {
-    let acc = 0;
-    for (let j = 0; j <= Math.min(r, ch - 1); j++) acc += tmp[j * cw + i];
-    for (let j = 0; j < ch; j++) {
-      d[j * cw + i] = acc;
-      if (j + r + 1 < ch) acc += tmp[(j + r + 1) * cw + i];
-      if (j - r >= 0) acc -= tmp[(j - r) * cw + i];
-    }
+  sxx /= n; syy /= n; sxy /= n;
+  const half = (sxx + syy) / 2;
+  const disc = Math.sqrt(Math.max(0, half * half - (sxx * syy - sxy * sxy)));
+  const l1 = Math.sqrt(Math.max(half + disc, 1e-9));
+  const l2 = Math.sqrt(Math.max(half - disc, 1e-9));
+  const theta = 0.5 * Math.atan2(2 * sxy, sxx - syy);
+  const cos = Math.cos(theta), sin = Math.sin(theta);
+  const ds = new Float64Array(n);
+  for (let i = 0; i < n; i++) {
+    const dx = pts[i][0] - mx, dy = pts[i][1] - my;
+    const a = (dx * cos + dy * sin) / l1;
+    const b = (dy * cos - dx * sin) / l2;
+    ds[i] = Math.sqrt(a * a + b * b);
   }
+  ds.sort();
+  const q50 = ds[Math.floor(n * 0.5)];
+  const q90 = ds[Math.min(n - 1, Math.floor(n * 0.9))];
+  return { mx, my, l1, l2, theta, q50, q90, area: q90 * q90 * l1 * l2 };
 }
 
-function drawDensity(pts, color) {
-  if (!pts?.length || !view) return;
-  const { px, py, pw, ph } = view;
-  const cw = Math.max(1, Math.ceil(pw / CELL));
-  const ch = Math.max(1, Math.ceil(ph / CELL));
-  const d = new Float32Array(cw * ch);
-  for (const [x, y] of pts) {
-    const i = Math.min(cw - 1, Math.max(0, ((x - px) / CELL) | 0));
-    const j = Math.min(ch - 1, Math.max(0, ((y - py) / CELL) | 0));
-    d[j * cw + i]++;
+function paintOval({ mx, my, l1, l2, theta, q50, q90, color }) {
+  ctx.fillStyle = color;
+  for (const [q, alpha] of [[q90, 0.16], [q50, 0.35]]) {
+    ctx.globalAlpha = alpha;
+    ctx.beginPath();
+    ctx.ellipse(mx, my, q * l1, q * l2, theta, 0, Math.PI * 2);
+    ctx.fill();
   }
-  // Triple box blur ≈ Gaussian, σ ≈ 12px: smooth enough that each mass
-  // band forms a few large contours instead of confetti islands.
-  boxBlur(d, cw, ch, 4);
-  boxBlur(d, cw, ch, 4);
-  boxBlur(d, cw, ch, 4);
-  // Opacity encodes probability mass, not raw density: find the density
-  // levels enclosing the top 50% and 90% of this category's parcels
-  // (highest-density-region bands). Scale-free, so a 70k-lot category and a
-  // 300-lot category both read as coherent 50/90% regions.
-  let total = 0;
-  for (let k = 0; k < d.length; k++) total += d[k];
-  if (!total) return;
-  const sorted = Float64Array.from(d).sort().reverse();
-  let acc = 0, t50 = 0, t90 = 0;
-  for (const v of sorted) {
-    acc += v;
-    if (!t50 && acc >= total * 0.5) t50 = v;
-    if (acc >= total * 0.9) { t90 = v; break; }
-  }
-  const r = parseInt(color.slice(1, 3), 16);
-  const g = parseInt(color.slice(3, 5), 16);
-  const b = parseInt(color.slice(5, 7), 16);
-  const img = new ImageData(cw, ch);
-  for (let k = 0; k < d.length; k++) {
-    const v = d[k];
-    if (!v) continue;
-    // Contour-style: strong ring at the 50%-mass boundary, lighter ring at
-    // 90%, faint fills between — overlapping categories stay tellable apart.
-    // Interior fills stay near-transparent so four overlapping categories
-    // don't composite into mud; the rings carry the hue.
-    let a;
-    if (v >= t50 * 1.25) a = 0.14;
-    else if (v >= t50) a = 0.72;
-    else if (v >= t90 * 1.2) a = 0.07;
-    else if (v >= t90) a = 0.42;
-    else a = 0.04 * (v / (t90 || 1)) ** 0.7;
-    img.data[k * 4] = r;
-    img.data[k * 4 + 1] = g;
-    img.data[k * 4 + 2] = b;
-    img.data[k * 4 + 3] = Math.round(255 * a);
-  }
-  const off = document.createElement("canvas");
-  off.width = cw;
-  off.height = ch;
-  off.getContext("2d").putImageData(img, 0, 0);
-  ctx.imageSmoothingEnabled = true;
-  ctx.drawImage(off, px, py, pw, ph);
+  ctx.globalAlpha = 1;
 }
 
 legendEl.addEventListener("click", (e) => {
